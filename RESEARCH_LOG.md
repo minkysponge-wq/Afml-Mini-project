@@ -65,3 +65,26 @@ accuracy-vs-cost sweeps. Noise-free oracle is degenerate (residual exactly 0 at 
 
 ### Phase A full run [RUN, in progress]
 `python -m blinit.experiments.phase_a > results/phaseA/stdout.log` (config `phaseA_v1.json`, seed 20261023).
+
+### Phase A run 1 [RUN 11:01–19:00] -> archived as `results/phaseA_run1_sleep_contaminated/`
+**[RESULT] accuracy (noise-free, 16 sensors, 20 problems, inverse crime):** all methods recover nu;
+max rel. error brent 1.2e-5, midpoint+lsq 1.0e-6, grid5+lsq 9e-8. No simulator failures, no
+optimiser non-success. **Solves (median [range]):** brent 10 [8–12], midpoint+lsq 11 [6–18],
+grid5+lsq 13 [10–16], oracle 2 (degenerate, zero residual at start).
+**[RESULT] objective landscape:** 41-point log-scan has exactly one local minimum for all 20 problems
+(at the true nu). No multimodality detected at this resolution, noise-free, 16 sensors.
+**[RESULT] grid convergence at sensors (vs nx=1024, 3 ICs):** ~2nd order (error ratio 4–5 per halving).
+At nx=256: RMS sensor error 5–8e-4 (nu=0.01), 1.8–2.8e-4 (nu=0.0316), 1.6–3.0e-5 (nu=0.1). The
+observation change for a +1% nu perturbation is 4–5e-4 (nu=0.01) and 0.8–1.4e-3 otherwise.
+**Implication:** at low nu, nx=256 discretisation error ≈ the signal of a 1% nu change -> expect
+~1–2% bias at low nu in the finer-grid mismatch test; negligible at high nu. Small relative to the
+statistical error expected at 1–5% noise. [DECISION] keep nx=256 for the pilot; quantify in finer-grid test.
+**[LIMITATION] timing contamination:** laptop entered Modern Standby (lid closed) 12:26–18:48 (Windows
+Kernel-Power events 506/507). Four runs show 400 s, 313 s, 1000 s and 23,653 s wall time for 2–12 solves
+(per-step cost 6,500–1,388,000 us vs ~200 us typical). Solve and step counts are unaffected. Timing
+protocol changes: (1) keep-awake requested for long runs; (2) AC/battery state logged in meta.json;
+(3) automatic flag for runs with us/step > 3x median (catches exactly these 4); (4) solver steps
+reported as a deterministic cost measure alongside wall time.
+**[DECISION]** Added per-solve traces (theta, objective, cumulative steps) so accuracy-vs-cost curves
+can be computed post hoc; best-so-far estimate is selected by objective only (no ground truth); truth
+used only to score. Rerun: `python -m blinit.experiments.phase_a --reuse-grid` (grid study reused; deterministic).

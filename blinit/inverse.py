@@ -6,6 +6,7 @@ are counted identically. Ground-truth nu is never visible to a Problem.
 """
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass, field
 
@@ -31,6 +32,7 @@ class Problem:
     log: CallLog = field(default_factory=CallLog)
     n_requests: int = 0
     _cache: dict = field(default_factory=dict)
+    trace: list = field(default_factory=list)  # (theta, objective, cumulative solver steps) per actual solve
 
     def __post_init__(self):
         self._u0 = initial_condition(self.sim.xc, self.amps, self.phases, length=self.sim.length)
@@ -47,6 +49,7 @@ class Problem:
         except FloatingPointError:
             r = np.full(len(self.obs.times) * self.mask.sum(), FAIL_RESIDUAL)
         self._cache[th] = r
+        self.trace.append((th, 0.5 * float(r @ r), self.log.n_steps))
         return r
 
     def objective(self, theta):
@@ -102,6 +105,7 @@ def run_method(name, make_problem, init_theta=None, refine_kw=None, brent_kw=Non
     wall = time.perf_counter() - t0
     out = dict(method=name, theta_hat=th, nu_hat=float(np.exp(th)),
                n_solves=p.log.n_calls, n_requests=p.n_requests, solver_steps=p.log.n_steps,
-               solver_seconds=p.log.seconds, wall_seconds=wall, sim_failures=p.log.failures, **info)
+               solver_seconds=p.log.seconds, wall_seconds=wall, sim_failures=p.log.failures,
+               trace=json.dumps([[round(a, 12), b, c] for a, b, c in p.trace]), **info)
     out["objective"] = p.objective(th)  # post-hoc; normally a cache hit, excluded from cost
     return out

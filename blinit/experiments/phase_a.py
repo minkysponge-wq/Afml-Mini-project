@@ -21,6 +21,17 @@ from blinit.simulator import CONFIG_DIR, CallLog, SimConfig, initial_condition, 
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def power_status():
+    """Best-effort AC/battery state (timing depends on it on laptops)."""
+    try:
+        import subprocess
+        r = subprocess.run(["powershell", "-NoProfile", "-c", "(Get-CimInstance Win32_Battery).BatteryStatus"],
+                           capture_output=True, text=True, timeout=20)
+        return {"win32_battery_status": r.stdout.strip(), "note": "2 = on AC power"}
+    except Exception as e:  # non-Windows or no battery
+        return {"error": repr(e)}
+
+
 def sample_problems(n, seed):
     rng = np.random.default_rng(np.random.SeedSequence(seed, spawn_key=(0,)))
     th = rng.uniform(TH_LO, TH_HI, n)
@@ -55,6 +66,8 @@ def main():
     ap.add_argument("--n", type=int, default=None)
     ap.add_argument("--quick", action="store_true", help="tiny smoke run (3 problems, coarse scan, no grid study)")
     ap.add_argument("--out", default=str(ROOT / "results" / "phaseA"))
+    ap.add_argument("--reuse-grid", action="store_true",
+                    help="copy grid-convergence rows from an existing meta.json instead of recomputing")
     args = ap.parse_args()
     cfg = json.loads(Path(args.config).read_text())
     n = args.n or (3 if args.quick else cfg["n_problems"])
@@ -69,7 +82,7 @@ def main():
 
     meta = dict(config=cfg, python=sys.version, platform=platform.platform(),
                 processor=platform.processor(), numpy=np.__version__,
-                started=time.strftime("%Y-%m-%d %H:%M:%S"), timing="sequential, single process, "
+                power=power_status(), started=time.strftime("%Y-%m-%d %H:%M:%S"), timing="sequential, single process, "
                 "time.perf_counter wall clock, float64 NumPy on CPU, no batching")
     rows, scans, obs_store = [], [], []
     scan_th = np.linspace(TH_LO, TH_HI, n_scan)
@@ -101,7 +114,10 @@ def main():
     np.savez(out / "problems.npz", nu=nus, amps=amps, phases=phases, y_obs=np.array(obs_store),
              mask=mask, sensor_x=obs.sensor_x, times=np.array(obs.times), scan_theta=scan_th,
              scan_objective=np.array(scans))
-    if not args.quick:
+    if args.reuse_grid and (out / "meta.json").exists():
+        meta["grid_convergence"] = json.loads((out / "meta.json").read_text())["grid_convergence"]
+        meta["grid_convergence_note"] = "reused from previous run (deterministic, timing-independent)"
+    elif not args.quick:
         meta["grid_convergence"] = grid_convergence(cfg, obs)
     meta["finished"] = time.strftime("%Y-%m-%d %H:%M:%S")
     (out / "meta.json").write_text(json.dumps(meta, indent=2))

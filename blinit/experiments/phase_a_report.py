@@ -67,7 +67,43 @@ def main():
     methods = list(dict.fromkeys(r["method"] for r in rows))
     color = {m: (DIAG if "ORACLE" in m else SERIES[i]) for i, m in enumerate(methods)}
 
+    # timing contamination: per-step cost far above the typical value (e.g. system sleep)
+    us = np.array([1e6 * r["solver_seconds"] / max(r["solver_steps"], 1) for r in rows])
+    med_us = float(np.median(us))
+    for r, u in zip(rows, us):
+        r["timing_flag"] = bool(u > 3 * med_us)
+    clean = [r for r in rows if not r["timing_flag"]]
     summ = summarize(rows)
+    for m, v in summarize(clean).items():
+        summ[m]["wall_median_s_unflagged"] = v["wall_median_s"]
+        summ[m]["wall_p90_s_unflagged"] = v["wall_p90_s"]
+    summ["_timing"] = dict(median_us_per_step=med_us, n_flagged=int(sum(r["timing_flag"] for r in rows)),
+                           flag_rule="us/step > 3x median over all runs")
+    # unimodality of the diagnostic scan (number of interior local minima)
+    J = P["scan_objective"]
+    n_min = [int(np.sum((j[1:-1] < j[:-2]) & (j[1:-1] < j[2:])) + (j[0] < j[1]) + (j[-1] < j[-2])) for j in J]
+    summ["_scan"] = dict(local_minima_per_problem=n_min, all_unimodal=all(k == 1 for k in n_min))
+    # accuracy-vs-cost: best-so-far (by objective, no ground truth) after k solves, scored vs truth
+    taus = [1e-2, 1e-3, 1e-4]
+    anytime = {}
+    if "trace" in rows[0]:
+        for m in methods:
+            curves, reach = [], {t: [] for t in taus}
+            for r in [r for r in rows if r["method"] == m]:
+                tr = json.loads(r["trace"])
+                th, best, errs = None, np.inf, []
+                for t_, J_, _ in tr:
+                    if J_ < best:
+                        best, th = J_, t_
+                    errs.append(abs(np.exp(th) - r["nu_true"]) / r["nu_true"])
+                curves.append(errs)
+                for t in taus:
+                    k = next((i + 1 for i, e in enumerate(errs) if e <= t), None)
+                    reach[t].append(k)
+            anytime[m] = curves
+            summ[m]["solves_to_reach"] = {f"{t:g}": dict(
+                median=float(np.median([k for k in reach[t] if k])) if any(reach[t]) else None,
+                n_never=sum(k is None for k in reach[t])) for t in taus}
     (d / "summary.json").write_text(json.dumps(summ, indent=2))
 
     # 1. representative trajectories + sensors (low / mid / high nu)
@@ -124,6 +160,22 @@ def main():
     axs[2].set_xticks(pos, [m.replace("(diagnostic)", "\n(diag.)") for m in methods], fontsize=7)
     axs[2].set_ylabel("forward solves per problem")
     fig.tight_layout(); fig.savefig(fig_dir / "recovery_and_cost.png", dpi=150); plt.close(fig)
+
+    # 4b. accuracy-vs-cost (anytime) curves
+    if anytime:
+        fig, ax = plt.subplots(figsize=(6.5, 4))
+        for m in methods:
+            K = max(len(c) for c in anytime[m])
+            M = np.full((len(anytime[m]), K), np.nan)
+            for i, c in enumerate(anytime[m]):
+                M[i, :len(c)] = c
+                M[i, len(c):] = c[-1]          # method has stopped: error stays at final value
+            k = np.arange(1, K + 1)
+            ax.plot(k, np.median(M, 0), color=color[m], label=m, ls="--" if "ORACLE" in m else "-")
+            ax.fill_between(k, np.percentile(M, 10, 0), np.percentile(M, 90, 0), color=color[m], alpha=0.12, lw=0)
+        ax.set_yscale("log"); ax.set_xlabel("forward solves used"); ax.set_ylabel("relative error of best-so-far nu")
+        ax.set_title("Accuracy vs cost (median, 10-90% band)", color=INK); ax.legend(fontsize=7)
+        fig.tight_layout(); fig.savefig(fig_dir / "accuracy_vs_solves.png", dpi=150); plt.close(fig)
 
     # 5. grid convergence
     gc = meta.get("grid_convergence")

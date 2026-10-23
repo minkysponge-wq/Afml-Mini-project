@@ -1,0 +1,50 @@
+{
+ "brent": {
+  "n": 20,
+  "rel_err_median": 3.216724214314989e-06,
+  "rel_err_p90": 1.1313910388479819e-05,
+  "rel_err_max": 1.2235082974568582e-05,
+  "solves_median": 10.0,
+  "solves_p90": 11.100000000000001,
+  "wall_median_s": 9.755535900010727,
+  "wall_p90_s": 16.18012484998909,
+  "sim_failures": 0,
+  "not_success": 0
+ },
+ "midpoint+lsq": {
+  "n": 20,
+  "rel_err_median": 7.291672000794448e-10,
+  "rel_err_p90": 2.1558969174909446e-08,
+  "rel_err_max": 1.0391426883194527e-06,
+  "solves_median": 11.0,
+  "solves_p90": 16.200000000000003,
+  "wall_median_s": 9.905665299971588,
+  "wall_p90_s": 321.61150758004527,
+  "sim_failures": 0,
+  "not_success": 0
+ },
+ "grid5+lsq": {
+  "n": 20,
+  "rel_err_median": 4.098879840211455e-11,
+  "rel_err_p90": 2.1347025126952577e-08,
+  "rel_err_max": 8.979426053357576e-08,
+  "solves_median": 13.0,
+  "solves_p90": 14.0,
+  "wall_median_s": 16.384110149985645,
+  "wall_p90_s": 22.654994749987978,
+  "sim_failures": 0,
+  "not_success": 0
+ },
+ "ORACLE+lsq(diagnostic)": {
+  "n": 20,
+  "rel_err_median": 0.0,
+  "rel_err_p90": 0.0,
+  "rel_err_max": 0.0,
+  "solves_median": 2.0,
+  "solves_p90": 2.0,
+  "wall_median_s": 2.2120534499408677,
+  "wall_p90_s": 5.948664020048455,
+  "sim_failures": 0,
+  "not_success": 0
+ }
+}

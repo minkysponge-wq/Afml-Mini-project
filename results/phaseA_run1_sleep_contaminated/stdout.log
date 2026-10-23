@@ -1,0 +1,48 @@
+[1/20] nu=0.0440 brent: err=1.2e-05 solves=9 t=11.0s | midpoint+lsq: err=2.0e-10 solves=10 t=11.2s | grid5+lsq: err=3.5e-13 solves=14 t=17.8s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=1.6s
+[2/20] nu=0.0112 brent: err=6.2e-07 solves=9 t=4.2s | midpoint+lsq: err=1.2e-10 solves=18 t=8.1s | grid5+lsq: err=4.2e-11 solves=13 t=9.1s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.7s
+[3/20] nu=0.0316 brent: err=1.1e-05 solves=10 t=10.9s | midpoint+lsq: err=1.2e-11 solves=6 t=6.2s | grid5+lsq: err=1.2e-11 solves=10 t=13.0s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=2.0s
+[4/20] nu=0.0144 brent: err=6.6e-06 solves=12 t=7.3s | midpoint+lsq: err=1.0e-06 solves=14 t=8.4s | grid5+lsq: err=7.7e-13 solves=16 t=11.4s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.7s
+[5/20] nu=0.0604 brent: err=7.4e-06 solves=9 t=14.7s | midpoint+lsq: err=1.4e-09 solves=12 t=20.7s | grid5+lsq: err=1.5e-08 solves=12 t=20.6s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=3.6s
+[6/20] nu=0.0187 brent: err=6.9e-07 solves=8 t=3.3s | midpoint+lsq: err=1.1e-10 solves=12 t=6.7s | grid5+lsq: err=3.2e-13 solves=12 t=8.9s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.9s
+[7/20] nu=0.0413 brent: err=1.1e-05 solves=8 t=8.2s | midpoint+lsq: err=3.7e-12 solves=10 t=11.1s | grid5+lsq: err=3.7e-12 solves=14 t=16.9s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=2.5s
+[8/20] nu=0.0468 brent: err=1.2e-05 solves=9 t=13.9s | midpoint+lsq: err=3.5e-09 solves=10 t=7.9s | grid5+lsq: err=3.1e-14 solves=14 t=21.6s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=3.3s
+[9/20] nu=0.0818 brent: err=3.2e-06 solves=10 t=23.3s | midpoint+lsq: err=3.1e-12 solves=16 t=38.9s | grid5+lsq: err=3.2e-09 solves=13 t=32.5s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=5.9s
+[10/20] nu=0.0296 brent: err=4.1e-07 solves=10 t=8.7s | midpoint+lsq: err=1.3e-09 solves=8 t=400.7s | grid5+lsq: err=1.3e-09 solves=12 t=18.2s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=3.4s
+[11/20] nu=0.0934 brent: err=5.5e-07 solves=11 t=30.1s | midpoint+lsq: err=4.7e-09 solves=18 t=51.0s | grid5+lsq: err=3.6e-12 solves=13 t=35.2s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=6.7s
+[12/20] nu=0.0376 brent: err=4.9e-06 solves=10 t=14.5s | midpoint+lsq: err=2.0e-08 solves=8 t=312.8s | grid5+lsq: err=2.0e-08 solves=12 t=16.5s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=3.0s
+[13/20] nu=0.0234 brent: err=2.6e-06 solves=10 t=8.5s | midpoint+lsq: err=4.4e-09 solves=10 t=8.8s | grid5+lsq: err=3.3e-08 solves=12 t=12.4s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=1.6s
+[14/20] nu=0.0119 brent: err=7.5e-06 solves=11 t=6.1s | midpoint+lsq: err=3.5e-08 solves=16 t=8.4s | grid5+lsq: err=2.5e-10 solves=13 t=10.0s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.8s
+[15/20] nu=0.0402 brent: err=2.3e-07 solves=9 t=12.9s | midpoint+lsq: err=1.9e-12 solves=10 t=13.9s | grid5+lsq: err=1.9e-12 solves=14 t=20.7s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=3.0s
+[16/20] nu=0.0250 brent: err=1.1e-05 solves=9 t=8.4s | midpoint+lsq: err=3.6e-11 solves=10 t=9.9s | grid5+lsq: err=3.6e-11 solves=14 t=16.2s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=1.7s
+[17/20] nu=0.0510 brent: err=1.3e-06 solves=9 t=15.4s | midpoint+lsq: err=1.2e-12 solves=12 t=999.7s | grid5+lsq: err=4.0e-11 solves=12 t=17.9s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=23653.2s
+[18/20] nu=0.0361 brent: err=2.0e-06 solves=10 t=13.0s | midpoint+lsq: err=5.8e-09 solves=8 t=9.9s | grid5+lsq: err=5.8e-09 solves=12 t=16.1s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=2.4s
+[19/20] nu=0.0150 brent: err=2.1e-06 solves=10 t=6.5s | midpoint+lsq: err=6.2e-11 solves=14 t=9.1s | grid5+lsq: err=3.7e-09 solves=14 t=12.3s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=1.0s
+[20/20] nu=0.0146 brent: err=3.2e-06 solves=12 t=7.3s | midpoint+lsq: err=1.1e-08 solves=14 t=8.8s | grid5+lsq: err=9.0e-08 solves=14 t=9.3s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.4s
+  gridconv ic=0 nu=0.01 nx=128 rms_err=2.15e-03 sens1%=4.41e-04
+  gridconv ic=0 nu=0.01 nx=256 rms_err=5.20e-04 sens1%=4.41e-04
+  gridconv ic=0 nu=0.01 nx=512 rms_err=1.06e-04 sens1%=4.41e-04
+  gridconv ic=0 nu=0.0316 nx=128 rms_err=7.40e-04 sens1%=9.14e-04
+  gridconv ic=0 nu=0.0316 nx=256 rms_err=1.80e-04 sens1%=9.14e-04
+  gridconv ic=0 nu=0.0316 nx=512 rms_err=3.64e-05 sens1%=9.14e-04
+  gridconv ic=0 nu=0.1 nx=128 rms_err=9.28e-05 sens1%=7.56e-04
+  gridconv ic=0 nu=0.1 nx=256 rms_err=2.26e-05 sens1%=7.56e-04
+  gridconv ic=0 nu=0.1 nx=512 rms_err=4.55e-06 sens1%=7.56e-04
+  gridconv ic=1 nu=0.01 nx=128 rms_err=2.95e-03 sens1%=4.16e-04
+  gridconv ic=1 nu=0.01 nx=256 rms_err=6.92e-04 sens1%=4.16e-04
+  gridconv ic=1 nu=0.01 nx=512 rms_err=1.45e-04 sens1%=4.16e-04
+  gridconv ic=1 nu=0.0316 nx=128 rms_err=7.66e-04 sens1%=9.73e-04
+  gridconv ic=1 nu=0.0316 nx=256 rms_err=1.87e-04 sens1%=9.73e-04
+  gridconv ic=1 nu=0.0316 nx=512 rms_err=3.78e-05 sens1%=9.73e-04
+  gridconv ic=1 nu=0.1 nx=128 rms_err=6.35e-05 sens1%=1.01e-03
+  gridconv ic=1 nu=0.1 nx=256 rms_err=1.58e-05 sens1%=1.01e-03
+  gridconv ic=1 nu=0.1 nx=512 rms_err=3.24e-06 sens1%=1.01e-03
+  gridconv ic=2 nu=0.01 nx=128 rms_err=3.51e-03 sens1%=5.24e-04
+  gridconv ic=2 nu=0.01 nx=256 rms_err=8.24e-04 sens1%=5.24e-04
+  gridconv ic=2 nu=0.01 nx=512 rms_err=1.63e-04 sens1%=5.24e-04
+  gridconv ic=2 nu=0.0316 nx=128 rms_err=1.16e-03 sens1%=1.01e-03
+  gridconv ic=2 nu=0.0316 nx=256 rms_err=2.82e-04 sens1%=1.01e-03
+  gridconv ic=2 nu=0.0316 nx=512 rms_err=5.70e-05 sens1%=1.01e-03
+  gridconv ic=2 nu=0.1 nx=128 rms_err=1.25e-04 sens1%=1.35e-03
+  gridconv ic=2 nu=0.1 nx=256 rms_err=3.02e-05 sens1%=1.35e-03
+  gridconv ic=2 nu=0.1 nx=512 rms_err=6.07e-06 sens1%=1.35e-03
+saved to C:\College\AFML MINI PORJ\results\phaseA

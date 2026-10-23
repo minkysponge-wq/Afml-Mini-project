@@ -1,2 +1,0 @@
-[1/20] nu=0.0440 brent: err=1.2e-05 solves=9 t=11.0s | midpoint+lsq: err=2.0e-10 solves=10 t=11.2s | grid5+lsq: err=3.5e-13 solves=14 t=17.8s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=1.6s
-[2/20] nu=0.0112 brent: err=6.2e-07 solves=9 t=4.2s | midpoint+lsq: err=1.2e-10 solves=18 t=8.1s | grid5+lsq: err=4.2e-11 solves=13 t=9.1s | ORACLE+lsq(diagnostic): err=0.0e+00 solves=2 t=0.7s
