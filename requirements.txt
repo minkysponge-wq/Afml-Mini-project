@@ -1,0 +1,6 @@
+# Versions used for all logged runs (Python 3.10.11, Windows 11)
+numpy==2.2.6
+scipy==1.15.3
+matplotlib==3.10.8
+pytest==8.4.2
+# Phase C (not yet installed): PyTorch CPU or scikit-learn MLP — to be decided; scikit-learn 1.7.2 is present

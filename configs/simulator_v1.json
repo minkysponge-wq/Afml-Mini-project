@@ -1,0 +1,28 @@
+{
+  "config_version": "simulator_v1",
+  "equation": "u_t + (u^2/2)_x = (nu/pi) u_xx  (PDEBench Burgers convention: the parameter nu, called 'epsilon' in PDEBench, is divided by pi)",
+  "domain": [0.0, 1.0],
+  "boundary": "periodic",
+  "nx": 256,
+  "cfl": 0.25,
+  "second_order": true,
+  "limiter": "PDEBench VLlimiter (alpha=2, MC-type) on cell-centred slopes",
+  "numerical_flux": "Rusanov/Murman with speed |(uL+uR)/2| for advection; central 2-point flux for diffusion",
+  "time_integration": "explicit 2-stage midpoint (predictor dt/2, corrector dt), dt = CFL*min(dx/max|u|, 0.5 dx^2/(nu/pi)), clipped to land on output times",
+  "dtype": "float64 (PDEBench default is float32; float64 chosen so finite-difference derivatives in the inverse solver are not dominated by round-off)",
+  "nu_bounds": [0.01, 0.1],
+  "nu_meaning": "PDEBench 'epsilon'; effective diffusivity D = nu/pi is in [0.00318, 0.0318]",
+  "initial_condition": {
+    "family": "u0(x) = sum_{k in modes} a_k sin(2 pi k x + phi_k)",
+    "modes": [1, 2, 3],
+    "amplitude_dist": "uniform(0, 1)",
+    "phase_dist": "uniform(0, 2 pi)",
+    "note": "PDEBench draws 2 of 4 modes with amp U(0,1) and random abs/window/sign; we use a fixed known 3-mode family per the proposal, with exact periodic wavenumbers 2 pi k / L (PDEBench divides by xc[-1]-xc[0], which is slightly non-periodic)."
+  },
+  "observation": {
+    "n_sensor_slots": 16,
+    "sensor_x": "x_s = (s + 0.5)/16, s = 0..15",
+    "operator": "periodic linear interpolation of cell-centre values at sensor x",
+    "times": [0.25, 0.5, 0.75, 1.0]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "config_version": "phaseA_v1",
+  "simulator_config": "simulator_v1.json",
+  "n_problems": 20,
+  "seed": 20261023,
+  "seed_note": "Phase A dev problems only; later dataset splits use different SeedSequence spawn keys",
+  "nu_sampling": "log-uniform on [0.01, 0.1]",
+  "n_active_sensors": 16,
+  "noise_rel_rms": 0.0,
+  "scan_points": 41,
+  "methods": {
+    "brent": {"xatol": 1e-4, "maxiter": 100},
+    "lsq_refine": {"xtol": 1e-4, "ftol": 1e-10, "diff_step": 1e-6, "max_nfev": 100},
+    "grid_k": 5
+  },
+  "diagnostic_only": ["oracle+lsq (initialised at the true nu; NOT a deployable method)"],
+  "grid_convergence": {"nx_list": [128, 256, 512], "nx_ref": 1024, "nus": [0.01, 0.0316, 0.1], "n_ics": 3}
+}
