@@ -1,0 +1,35 @@
+{
+  "config_version": "phaseD_v1_tightlsq_3seeds",
+  "dataset": "phaseB_v2",
+  "model_version": "phaseC_v2",
+  "mlp_seeds": [
+    0,
+    1,
+    2
+  ],
+  "mlp_seeds_note": "pilot test: all 3 MLP seeds refined (pre-registered in docs/preregistration_pilot_test.md)",
+  "knn_grid": {
+    "k": [
+      1,
+      5,
+      10
+    ],
+    "ic_weight": [
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "brent": {
+    "xatol": 0.001,
+    "maxiter": 100
+  },
+  "lsq_refine": {
+    "xtol": 0.0001,
+    "ftol": 1e-10,
+    "diff_step": 1e-06,
+    "max_nfev": 100
+  },
+  "grid_k": 5,
+  "tolerance_note": "Accuracy-matching check: LSQ tightened to xtol 1e-4 (Phase A sweep: max err <=9e-7 noise-free), Brent kept at xatol 1e-3 (max err 1.7e-4). Precision now favours the LSQ-based methods, so any remaining MLP saving vs Brent is not due to looser LSQ stopping."
+}

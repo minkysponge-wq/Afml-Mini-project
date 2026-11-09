@@ -1,0 +1,35 @@
+{
+  "config_version": "phaseD_v1_3seeds",
+  "dataset": "phaseB_v2",
+  "model_version": "phaseC_v2",
+  "mlp_seeds": [
+    0,
+    1,
+    2
+  ],
+  "mlp_seeds_note": "pilot test: all 3 MLP seeds refined (pre-registered in docs/preregistration_pilot_test.md)",
+  "knn_grid": {
+    "k": [
+      1,
+      5,
+      10
+    ],
+    "ic_weight": [
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "brent": {
+    "xatol": 0.001,
+    "maxiter": 100
+  },
+  "lsq_refine": {
+    "xtol": 0.001,
+    "ftol": 1e-10,
+    "diff_step": 1e-06,
+    "max_nfev": 100
+  },
+  "grid_k": 5,
+  "tolerance_note": "Matched from development data only (Phase A init sweep, noise-free): brent xatol=1e-3 -> max rel err 1.7e-4, median 9 solves; lsq xtol=1e-3 -> max rel err <=8.6e-5 for starts within 1-35%. Both << smallest information-limited error seen in Phase A noise pilot (median 2.6e-3 at 16 sensors / 1% noise)."
+}
