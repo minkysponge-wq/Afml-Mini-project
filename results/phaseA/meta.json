@@ -44,7 +44,11 @@
   "platform": "Windows-10-10.0.26200-SP0",
   "processor": "Intel64 Family 6 Model 170 Stepping 4, GenuineIntel",
   "numpy": "2.2.6",
-  "started": "2026-10-23 11:01:45",
+  "power": {
+    "win32_battery_status": "2",
+    "note": "2 = on AC power"
+  },
+  "started": "2026-10-23 19:02:31",
   "timing": "sequential, single process, time.perf_counter wall clock, float64 NumPy on CPU, no batching",
   "grid_convergence": [
     {
@@ -264,5 +268,6 @@
       "rms_sens_1pct": 0.0013504467702917153
     }
   ],
-  "finished": "2026-10-23 19:00:20"
+  "grid_convergence_note": "reused from previous run (deterministic, timing-independent)",
+  "finished": "2026-10-23 23:59:19"
 }

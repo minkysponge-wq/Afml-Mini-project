@@ -88,3 +88,25 @@ reported as a deterministic cost measure alongside wall time.
 **[DECISION]** Added per-solve traces (theta, objective, cumulative steps) so accuracy-vs-cost curves
 can be computed post hoc; best-so-far estimate is selected by objective only (no ground truth); truth
 used only to score. Rerun: `python -m blinit.experiments.phase_a --reuse-grid` (grid study reused; deterministic).
+
+### Phase A run 2 [RUN 2026-10-23 19:02 – 23:59, AC power] -> `results/phaseA/` (verified)
+Command: `python -m blinit.experiments.phase_a --reuse-grid`; report: `python -m blinit.experiments.phase_a_report`.
+Accuracy, solve counts and objective scans are bit-identical in kind to run 1 (deterministic).
+**[LIMITATION]** The laptop again entered standby (~19:45–23:06; keep-awake prevents idle sleep only,
+not lid close). One run flagged (problem 9, midpoint+lsq: 13,611 s for 8 solves); excluded from
+timing statistics, kept for accuracy/solves. Median cost 144 us/step on unflagged runs.
+**[RESULT] summary (20 problems, noise-free, 16 sensors):**
+
+| method | rel err median / max | solves median / p90 | solves to reach 1e-2 / 1e-3 / 1e-4 (median) |
+|---|---|---|---|
+| brent (xatol 1e-4) | 3.2e-6 / 1.2e-5 | 10 / 11.1 | 5.5 / 6.5 / 7 |
+| midpoint+lsq | 7.3e-10 / 1.0e-6 | 11 / 16.2 | 6 / 7 / 8 |
+| grid5+lsq | 4.1e-11 / 9.0e-8 | 13 / 14 | 9 / 10 / 10.5 |
+| ORACLE+lsq (diagnostic) | 0 / 0 | 2 / 2 | 1 / 1 / 1 |
+
+"Solves to reach" uses ground truth only to score the best-so-far (objective-selected) estimate — it is
+an anytime diagnostic, not a deployable stopping rule. Scans: all 20 unimodal.
+**Interpretation (provisional):** Brent is the strongest classical baseline at practically relevant
+accuracy (1e-2–1e-3). The coarse grid's 5 up-front solves are not recovered by the refinement.
+Headroom for any initialiser is bounded: even a perfect start costs >= 2 solves under the LSQ stopping
+rule, vs ~6.5–10 for Brent. Next: init-quality diagnostic sweep (`blinit.experiments.init_sweep`).

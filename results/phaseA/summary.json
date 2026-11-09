@@ -1,0 +1,144 @@
+{
+  "brent": {
+    "n": 20,
+    "rel_err_median": 3.216724214314989e-06,
+    "rel_err_p90": 1.1313910388479819e-05,
+    "rel_err_max": 1.2235082974568582e-05,
+    "solves_median": 10.0,
+    "solves_p90": 11.100000000000001,
+    "wall_median_s": 8.685760450025555,
+    "wall_p90_s": 14.688001919968524,
+    "sim_failures": 0,
+    "not_success": 0,
+    "wall_median_s_unflagged": 8.685760450025555,
+    "wall_p90_s_unflagged": 14.688001919968524,
+    "solves_to_reach": {
+      "0.01": {
+        "median": 5.5,
+        "n_never": 0
+      },
+      "0.001": {
+        "median": 6.5,
+        "n_never": 0
+      },
+      "0.0001": {
+        "median": 7.0,
+        "n_never": 0
+      }
+    }
+  },
+  "midpoint+lsq": {
+    "n": 20,
+    "rel_err_median": 7.291672000794448e-10,
+    "rel_err_p90": 2.1558969174909446e-08,
+    "rel_err_max": 1.0391426883194527e-06,
+    "solves_median": 11.0,
+    "solves_p90": 16.200000000000003,
+    "wall_median_s": 8.970466600032523,
+    "wall_p90_s": 23.533496500004574,
+    "sim_failures": 0,
+    "not_success": 0,
+    "wall_median_s_unflagged": 8.83147800003644,
+    "wall_p90_s_unflagged": 20.593205500021575,
+    "solves_to_reach": {
+      "0.01": {
+        "median": 6.0,
+        "n_never": 0
+      },
+      "0.001": {
+        "median": 7.0,
+        "n_never": 0
+      },
+      "0.0001": {
+        "median": 8.0,
+        "n_never": 0
+      }
+    }
+  },
+  "grid5+lsq": {
+    "n": 20,
+    "rel_err_median": 4.098879840211455e-11,
+    "rel_err_p90": 2.1347025126952577e-08,
+    "rel_err_max": 8.979426053357576e-08,
+    "solves_median": 13.0,
+    "solves_p90": 14.0,
+    "wall_median_s": 11.224327349977102,
+    "wall_p90_s": 23.02078609004384,
+    "sim_failures": 0,
+    "not_success": 0,
+    "wall_median_s_unflagged": 11.224327349977102,
+    "wall_p90_s_unflagged": 23.02078609004384,
+    "solves_to_reach": {
+      "0.01": {
+        "median": 9.0,
+        "n_never": 0
+      },
+      "0.001": {
+        "median": 10.0,
+        "n_never": 0
+      },
+      "0.0001": {
+        "median": 10.5,
+        "n_never": 0
+      }
+    }
+  },
+  "ORACLE+lsq(diagnostic)": {
+    "n": 20,
+    "rel_err_median": 0.0,
+    "rel_err_p90": 0.0,
+    "rel_err_max": 0.0,
+    "solves_median": 2.0,
+    "solves_p90": 2.0,
+    "wall_median_s": 1.5221315999515355,
+    "wall_p90_s": 3.406012760032901,
+    "sim_failures": 0,
+    "not_success": 0,
+    "wall_median_s_unflagged": 1.5221315999515355,
+    "wall_p90_s_unflagged": 3.406012760032901,
+    "solves_to_reach": {
+      "0.01": {
+        "median": 1.0,
+        "n_never": 0
+      },
+      "0.001": {
+        "median": 1.0,
+        "n_never": 0
+      },
+      "0.0001": {
+        "median": 1.0,
+        "n_never": 0
+      }
+    }
+  },
+  "_timing": {
+    "median_us_per_step": 144.31149569165595,
+    "n_flagged": 1,
+    "flag_rule": "us/step > 3x median over all runs"
+  },
+  "_scan": {
+    "local_minima_per_problem": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "all_unimodal": true
+  }
+}
