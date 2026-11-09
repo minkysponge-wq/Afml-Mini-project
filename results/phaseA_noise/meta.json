@@ -1,0 +1,83 @@
+{
+  "config": {
+    "config_version": "phaseA_v1",
+    "simulator_config": "simulator_v1.json",
+    "n_problems": 20,
+    "seed": 20261023,
+    "seed_note": "Phase A dev problems only; later dataset splits use different SeedSequence spawn keys",
+    "nu_sampling": "log-uniform on [0.01, 0.1]",
+    "n_active_sensors": 16,
+    "noise_rel_rms": 0.0,
+    "scan_points": 41,
+    "methods": {
+      "brent": {
+        "xatol": 0.0001,
+        "maxiter": 100
+      },
+      "lsq_refine": {
+        "xtol": 0.0001,
+        "ftol": 1e-10,
+        "diff_step": 1e-06,
+        "max_nfev": 100
+      },
+      "grid_k": 5
+    },
+    "diagnostic_only": [
+      "oracle+lsq (initialised at the true nu; NOT a deployable method)"
+    ],
+    "grid_convergence": {
+      "nx_list": [
+        128,
+        256,
+        512
+      ],
+      "nx_ref": 1024,
+      "nus": [
+        0.01,
+        0.0316,
+        0.1
+      ],
+      "n_ics": 3
+    }
+  },
+  "noise_def": "sigma = level * RMS(clean 16x4 obs of that trajectory)",
+  "noise_seed": "SeedSequence(cfg.seed, spawn_key=(2, problem, level_index))",
+  "conditions": [
+    [
+      4,
+      0.0
+    ],
+    [
+      8,
+      0.0
+    ],
+    [
+      4,
+      0.01
+    ],
+    [
+      8,
+      0.01
+    ],
+    [
+      16,
+      0.01
+    ],
+    [
+      4,
+      0.05
+    ],
+    [
+      8,
+      0.05
+    ],
+    [
+      16,
+      0.05
+    ]
+  ],
+  "n_scan": 25,
+  "workers": 10,
+  "timing_note": "parallel processes: wall times not comparable; use solve counts",
+  "finished": "2026-11-09 16:38:32"
+}

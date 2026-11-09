@@ -1,0 +1,42 @@
+{
+  "config_version": "phaseB_v2",
+  "simulator_config": "simulator_v1.json",
+  "base_seed": 7202611,
+  "splits": {
+    "train": 3000,
+    "val": 50,
+    "test": 50
+  },
+  "ic_seed_offset": {
+    "train": 0,
+    "val": 1000000,
+    "test": 2000000
+  },
+  "nu_sampling": "log-uniform on [0.01, 0.1]: the target is log nu, the bounds span one decade, and uniform-in-log gives every scale equal weight (matches the optimiser's parameterisation)",
+  "ic": {
+    "modes": [
+      1,
+      2,
+      3
+    ],
+    "amp": "U(0,1)",
+    "phase": "U(0,2pi)"
+  },
+  "observation_variants": {
+    "n_sensors": [
+      4,
+      8,
+      16
+    ],
+    "noise_levels": [
+      0.0,
+      0.01,
+      0.05
+    ],
+    "noise_def": "sigma = level * RMS(clean 16x4 observations of the parent trajectory)",
+    "masks": "nested evenly spaced (seen patterns); train-only random-dropout augmentation is a separate, documented option",
+    "train_random_dropout_variants_per_traj": 0
+  },
+  "normalisation": "per-observation-time mean/std over available TRAIN readings only; missing readings set to 0 after standardisation (= train mean) and flagged by the mask",
+  "change_note": "v2 = v1 with train enlarged 300->3000 (same base_seed/offsets: first 300 train trajectories identical; val/test identical). Reason: pilot learning curve (75/150/300 traj -> ~39/32/20% val median error) showed the MLP is data-limited."
+}

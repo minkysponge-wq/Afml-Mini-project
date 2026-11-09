@@ -110,3 +110,51 @@ an anytime diagnostic, not a deployable stopping rule. Scans: all 20 unimodal.
 accuracy (1e-2–1e-3). The coarse grid's 5 up-front solves are not recovered by the refinement.
 Headroom for any initialiser is bounded: even a perfect start costs >= 2 solves under the LSQ stopping
 rule, vs ~6.5–10 for Brent. Next: init-quality diagnostic sweep (`blinit.experiments.init_sweep`).
+
+## 2026-11-09 — Session 2: Phase A', B, C, D setup
+
+### Housekeeping
+- `file (afml).txt` (12.7 MB, the word "file" repeated ~2.66M times) appeared in the project folder; not created by
+  this pipeline, not project content; git-ignored, untouched.
+- Repo pushed (on user request) to github.com/minkysponge-wq/AFML-Mini-project, branch `main`.
+- First init-sweep attempt was killed after 10/20 problems (no traceback; process ended with the session). Re-run completed.
+
+### Init-quality sweep [RESULT] (`python -m blinit.experiments.init_sweep`, noise-free, 20 Phase A problems)
+DIAGNOSTIC (truth-perturbed starts). Median solves / max rel err:
+brent xatol 1e-2: 8 / 1.5e-3; 1e-3: 9 / 1.7e-4; 1e-4: 10 / 1.2e-5.
+lsq xtol 1e-3 from |delta| = 0.01/0.03/0.1/0.3 (log-nu): 6/6/8/8 solves, max err <= 8.6e-5.
+lsq xtol 1e-2: 4/4/6/8 solves but max err up to 1e-2 (too loose to be matched).
+**Reading:** at matched accuracy (~1e-4), even a 1%-accurate start saves ~3 solves vs Brent (6 vs 9);
+a 10%-accurate start saves ~1 (8 vs 9). Solve-count savings are bounded at ~1.1–1.5x.
+
+### Phase A' noise/sensor pilot [RESULT] (`python -m blinit.experiments.phase_a_noise --workers 10`)
+20 problems x {4,8,16 sensors} x {0,1,5% noise}; 25-pt scans; parallel (no timing reported).
+- Scans: 0/160 with >1 local minimum. No multimodality detected.
+- All methods reach the same optimum (objective gaps negligible; max relative gap ~6e-6 from xtol stop).
+  -> no optimiser failures; difficult cases are information-limited.
+- Information-limited error (best-found optimum vs truth, median/p90): s16 n1%: 0.26%/0.8%; s16 n5%: 0.46%/2.2%;
+  s8 n5%: 1.9%/6%; s4 n5%: 2.6%/14% (problem 19 at s4 n5%: 22% for every method).
+- Solves (median): brent 9–10, midpoint+lsq 10–11, grid5+lsq 13–14, ORACLE+lsq 6 (noisy; 8 at s4 n5%).
+  **With noise, even a perfect start needs ~6 solves (xtol 1e-4) -> best-case ~1.5x vs Brent in solves.**
+
+### Phase B [RESULT]
+`python -m blinit.experiments.build_dataset` (phaseB_v1: 300/50/50) and `--config configs/phaseB_v2.json`
+(train enlarged to 3000; first 300 train, all val and test bit-identical to v1 - verified). 9 variants per
+trajectory (3 sensor counts x 3 noise levels). All 9 integrity checks pass for both. Generation wall time v2:
+train 230 s, val 7 s, test 6 s on 8 workers (~0.6 CPU-h total; to be counted in break-even).
+Tests: `tests/test_data.py` (4) incl. deliberate-leak detection.
+
+### Phase C [RESULT] (validation only; test split not loaded)
+v1 (300 traj): selected lr 1e-3, alpha 1e-3; neural-only val rel. err median/p90 = 18.7%/65% (seed 0),
+22%/68% (s1), 21%/66% (s2). Strong overfitting (train MSE ~0.01 vs val ~0.3, standardised).
+Learning curve (val median, 2 seeds): 75 traj ~39%, 150 ~32%, 300 ~20% -> data-limited.
+kNN (tuned on val: k=5, IC weight 2) neural-only: 39% median, p90 155% -> much worse than MLP.
+**[DECISION]** enlarge train to 3000 (within proposal scope) -> phaseB_v2 / phaseC_v2.
+v2 (3000 traj): selected lr 1e-3, alpha 1e-3; val median/p90 = 8.2%/33% (s0), 9.8%/29% (s1), 11.7%/33% (s2).
+Tuning 4 configs: 313 s; per-seed training 25–110 s (CPU, sklearn). Midpoint guess: 57% median.
+
+### Phase D setup [DECISION]
+Matched tolerances from development data: brent xatol 1e-3, lsq xtol 1e-3 (`configs/phaseD_v1.json`).
+Smoke run (4 val variants): midpoint+lsq used 6 solves vs mlp+lsq 8 on some cases - initialisation may matter
+little for Gauss-Newton on this smooth 1-D objective. Full val comparison running:
+`python -m blinit.experiments.evaluate --split val --workers 12`.

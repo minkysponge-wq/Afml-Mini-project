@@ -1,0 +1,77 @@
+{
+  "brent xatol=0.01": {
+    "solves_median": 8.0,
+    "rel_err_median": 0.000794896837070323,
+    "rel_err_max": 0.0014861715293096405
+  },
+  "brent xatol=0.001": {
+    "solves_median": 9.0,
+    "rel_err_median": 7.898124819805564e-05,
+    "rel_err_max": 0.00016631482447370405
+  },
+  "brent xatol=0.0001": {
+    "solves_median": 10.0,
+    "rel_err_median": 3.216724214314989e-06,
+    "rel_err_max": 1.2235082974568582e-05
+  },
+  "lsq xtol=0.01 |delta|=0.01": {
+    "solves_median": 4.0,
+    "rel_err_median": 8.971330096945945e-05,
+    "rel_err_max": 0.0011320309449679886
+  },
+  "lsq xtol=0.01 |delta|=0.03": {
+    "solves_median": 4.0,
+    "rel_err_median": 0.0007117656689404057,
+    "rel_err_max": 0.006972813851380164
+  },
+  "lsq xtol=0.01 |delta|=0.1": {
+    "solves_median": 6.0,
+    "rel_err_median": 5.2918843764449325e-05,
+    "rel_err_max": 0.00601085500885746
+  },
+  "lsq xtol=0.01 |delta|=0.3": {
+    "solves_median": 8.0,
+    "rel_err_median": 4.630196092427782e-05,
+    "rel_err_max": 0.009944261040766166
+  },
+  "lsq xtol=0.001 |delta|=0.01": {
+    "solves_median": 6.0,
+    "rel_err_median": 7.408297061078812e-09,
+    "rel_err_max": 1.821494449433352e-05
+  },
+  "lsq xtol=0.001 |delta|=0.03": {
+    "solves_median": 6.0,
+    "rel_err_median": 4.40975288040821e-07,
+    "rel_err_max": 8.614595844202119e-05
+  },
+  "lsq xtol=0.001 |delta|=0.1": {
+    "solves_median": 8.0,
+    "rel_err_median": 9.708662767899684e-09,
+    "rel_err_max": 6.465623010977566e-05
+  },
+  "lsq xtol=0.001 |delta|=0.3": {
+    "solves_median": 8.0,
+    "rel_err_median": 2.518220916442099e-07,
+    "rel_err_max": 8.136807370263438e-05
+  },
+  "lsq xtol=0.0001 |delta|=0.01": {
+    "solves_median": 6.0,
+    "rel_err_median": 5.0991919347525804e-09,
+    "rel_err_max": 9.22151181832915e-07
+  },
+  "lsq xtol=0.0001 |delta|=0.03": {
+    "solves_median": 8.0,
+    "rel_err_median": 2.8796981097951887e-13,
+    "rel_err_max": 4.7632003378034496e-07
+  },
+  "lsq xtol=0.0001 |delta|=0.1": {
+    "solves_median": 8.0,
+    "rel_err_median": 1.1595795365379092e-09,
+    "rel_err_max": 7.737099218508766e-07
+  },
+  "lsq xtol=0.0001 |delta|=0.3": {
+    "solves_median": 10.0,
+    "rel_err_median": 8.511817206876982e-11,
+    "rel_err_max": 2.0314257849106707e-07
+  }
+}
