@@ -158,3 +158,33 @@ Matched tolerances from development data: brent xatol 1e-3, lsq xtol 1e-3 (`conf
 Smoke run (4 val variants): midpoint+lsq used 6 solves vs mlp+lsq 8 on some cases - initialisation may matter
 little for Gauss-Newton on this smooth 1-D objective. Full val comparison running:
 `python -m blinit.experiments.evaluate --split val --workers 12`.
+
+### Phase D comparison on VALIDATION [RESULT] (`python -m blinit.experiments.evaluate --split val --workers 12`;
+analysis `python -m blinit.experiments.analyze_d --dir results/phaseD_v1_val`)
+450 variants (50 val trajectories x 3 sensor counts x 3 noise levels), 1404 s wall on 12 workers. 0 simulator failures.
+Cost = solver steps x 144.3 us/step (sequential Phase A median) -> CPU-s; parallel wall times not used.
+kNN re-tuned on val with the 3000-traj library: k=10, IC weight 1.0.
+
+| method | rel err median / p90 | solves median / mean | CPU-s mean / median / p90 |
+|---|---|---|---|
+| brent | 2.47e-3 / 2.93e-2 | 9 / 9.74 | 9.05 / 7.41 / 17.44 |
+| midpoint+lsq | 2.44e-3 / 2.93e-2 | 12 / 12.28 | 11.86 / 6.73 / 28.30 |
+| grid5+lsq | 2.45e-3 / 2.94e-2 | 12 / 11.79 | 12.29 / 9.89 / 19.86 |
+| knn+lsq | 2.48e-3 / 2.93e-2 | 10 / 10.28 | 10.13 / 7.01 / 22.98 |
+| mlp_s0+lsq | 2.45e-3 / 2.93e-2 | 8 / 8.04 | 7.72 / 5.47 / 14.19 |
+
+Paired (trajectory-level bootstrap, 4000 resamples), median difference in CPU-s per query:
+mlp - brent: -1.49 [95% CI -1.84, -1.16]; mlp - midpoint+lsq: -2.82 [-3.51, -1.98] (negative in every
+sensor/noise cell); knn - brent: +0.56 [-0.19, +1.27] (no evidence of saving).
+Ratios (brent/mlp): mean CPU 1.17x, median CPU 1.35x, median solves 9/8. **2x target not met on val.**
+Break-even vs brent (strongest classical by mean CPU): offline 2254 CPU-s (train data generation, upper bound
+wall x workers, + 4 tuning runs + seed-0 training) / 1.33 CPU-s saving per query (incl. 1.2e-4 s single-query
+MLP inference) = **~1,700 queries**. kNN: saving <= 0 -> no finite break-even.
+Smoke-run impression (midpoint+lsq cheap) did NOT hold: on 450 variants midpoint+lsq is the costliest-but-one.
+Accuracy matching check: errors vs truth are identical across methods at median and p90 (information-limited).
+Objective-gap flags (rel. gap > 1e-3 vs best-found) occur almost only in noise-free cases where the optimum is ~0
+(relative gap meaningless); in nu, max deviation from the best-found estimate is 0.06% (brent) vs 0.25–0.39%
+(LSQ methods). **[LIMITATION]** LSQ xtol 1e-3 is looser than brent xatol 1e-3 in the worst case; part of the
+saving may come from that. Next: accuracy-matched check with LSQ xtol 1e-4 (or brent 1e-2) before final claims.
+**[LIMITATION]** Validation was used for MLP early stopping / tuning and kNN tuning -> these numbers are
+optimistic for learned methods. The pilot TEST split has not been touched.
