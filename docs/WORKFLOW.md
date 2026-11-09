@@ -1,6 +1,6 @@
 # Project workflow: status and phase plan
 
-*Last updated 2026-11-09. Each phase lists tasks, outputs and an **exit gate**: a concrete check
+*Last updated 2026-11-09 (evening). **PAUSED** — see `RESEARCH_LOG.md` → "PAUSED by user" for resume commands. Each phase lists tasks, outputs and an **exit gate**: a concrete check
 that must pass before the next phase starts. "Verified" means the result exists on disk and was
 checked; anything else is a plan.*
 
@@ -18,8 +18,13 @@ checked; anything else is a plan.*
 | Accuracy-vs-cost curves | Done, verified | `results/phaseA/figures/accuracy_vs_solves.png` |
 | Starting-point quality sweep (how good must an init be?) | **Re-running** (first attempt killed at 10/20) | `blinit/experiments/init_sweep.py` |
 | Literature audit | First pass only (6 verified sources) | `docs/literature_audit.md` |
-| Phase A with noise / 4–8 sensors | Not started | — |
-| Dataset (Phase B), MLP (C), kNN + full comparison (D), go/no-go (E), scale (F), report | Not started | — |
+| Phase A′ noise / 4–8 sensors + starting-point sweep | Done, verified | `results/phaseA_noise/`, `results/phaseA/init_sweep.csv` |
+| Phase B dataset (v2: 3000/50/50, 9 integrity checks pass) | Done, verified | `data/phaseB_v2/integrity.json` |
+| Phase C MLP (3 seeds; val median error 8–12%) | Done, verified | `models/phaseC_v2/` |
+| Phase D comparison on validation | Done, verified (MLP vs Brent: −1.49 CPU-s/query, CI [−1.84, −1.16]; 1.17–1.35×) | `results/phaseD_v1_val/` |
+| Accuracy-matched validation check | **Paused** (not saved; rerun) | `configs/phaseD_v1_tightlsq.json` |
+| Pilot test (pre-registered, 3 seeds × 2 tolerances) | **Paused** (not saved; rerun) | `docs/preregistration_pilot_test.md` |
+| Go/no-go (E), scale (F), report (G), submission (H) | Not started | — |
 
 ### Verified Phase A findings
 - **Recovery:** every method recovers ν on all 20 noise-free problems (worst relative error 1.2e-5), with no failures.

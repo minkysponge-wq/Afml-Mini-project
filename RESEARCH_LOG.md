@@ -188,3 +188,31 @@ Objective-gap flags (rel. gap > 1e-3 vs best-found) occur almost only in noise-f
 saving may come from that. Next: accuracy-matched check with LSQ xtol 1e-4 (or brent 1e-2) before final claims.
 **[LIMITATION]** Validation was used for MLP early stopping / tuning and kNN tuning -> these numbers are
 optimistic for learned methods. The pilot TEST split has not been touched.
+
+### Repo / attribution (2026-11-09)
+Repo renamed by the user to github.com/minkysponge-wq/Afml-Mini-project (same GitHub repo id; it was empty when
+checked). History rewritten locally to remove Claude co-author trailers (file trees bit-identical); pushed; GitHub
+contributors API shows only `minkysponge-wq` (7 commits). No co-author trailers on future commits.
+
+### Pre-registration (2026-11-09)
+`docs/preregistration_pilot_test.md` + `configs/phaseD_v1_test.json`, `configs/phaseD_v1_tightlsq_test.json`
+committed (a9de91a) BEFORE any test evaluation.
+
+### PAUSED by user (2026-11-09 ~17:55) — runs stopped, nothing saved from them
+- Accuracy-matched VAL run (`configs/phaseD_v1_tightlsq.json`): stopped at 400/450 variants.
+- Pilot TEST primary (`configs/phaseD_v1_test.json`): stopped at 200/450 variants.
+- Pilot TEST tight (`configs/phaseD_v1_tightlsq_test.json`): not started.
+`evaluate.py` writes results only on completion, so no partial results exist; empty output folders deleted.
+**Test-integrity note:** test variants were simulated, but no test result was written, printed or viewed
+(stdout shows only progress counts). The pre-registration stands.
+**To resume** (≈30 min + ≈2 × 40 min on 12 workers; keep the laptop on AC with the lid open):
+```
+python -m blinit.experiments.evaluate --config configs/phaseD_v1_tightlsq.json --split val --workers 12
+python -m blinit.experiments.analyze_d --dir results/phaseD_v1_tightlsq_val
+python -m blinit.experiments.evaluate --config configs/phaseD_v1_test.json --split test --workers 12
+python -m blinit.experiments.evaluate --config configs/phaseD_v1_tightlsq_test.json --split test --workers 12
+python -m blinit.experiments.analyze_d --dir results/phaseD_v1_3seeds_test
+python -m blinit.experiments.analyze_d --dir results/phaseD_v1_tightlsq_3seeds_test
+```
+Possible improvement before resuming (infrastructure only, not a protocol change): make `evaluate.py` append
+rows per variant and skip completed variants on restart, so future pauses lose nothing.
