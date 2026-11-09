@@ -1,0 +1,17 @@
+{
+  "config_version": "phaseB_v1",
+  "simulator_config": "simulator_v1.json",
+  "base_seed": 7202611,
+  "splits": {"train": 300, "val": 50, "test": 50},
+  "ic_seed_offset": {"train": 0, "val": 1000000, "test": 2000000},
+  "nu_sampling": "log-uniform on [0.01, 0.1]: the target is log nu, the bounds span one decade, and uniform-in-log gives every scale equal weight (matches the optimiser's parameterisation)",
+  "ic": {"modes": [1, 2, 3], "amp": "U(0,1)", "phase": "U(0,2pi)"},
+  "observation_variants": {
+    "n_sensors": [4, 8, 16],
+    "noise_levels": [0.0, 0.01, 0.05],
+    "noise_def": "sigma = level * RMS(clean 16x4 observations of the parent trajectory)",
+    "masks": "nested evenly spaced (seen patterns); train-only random-dropout augmentation is a separate, documented option",
+    "train_random_dropout_variants_per_traj": 0
+  },
+  "normalisation": "per-observation-time mean/std over available TRAIN readings only; missing readings set to 0 after standardisation (= train mean) and flagged by the mask"
+}

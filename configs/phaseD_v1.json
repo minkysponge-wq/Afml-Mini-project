@@ -1,0 +1,12 @@
+{
+  "config_version": "phaseD_v1",
+  "dataset": "phaseB_v1",
+  "model_version": "phaseC_v1",
+  "mlp_seeds": [0],
+  "mlp_seeds_note": "pilot uses seed 0 in the refined comparison; all 3 seeds reported neural-only",
+  "knn_grid": {"k": [1, 5, 10], "ic_weight": [0.5, 1.0, 2.0]},
+  "brent": {"xatol": 1e-4, "maxiter": 100},
+  "lsq_refine": {"xtol": 1e-4, "ftol": 1e-10, "diff_step": 1e-6, "max_nfev": 100},
+  "grid_k": 5,
+  "tolerance_note": "PROVISIONAL: to be revised from Gate A (noise pilot + init sweep) before running"
+}
