@@ -4,3 +4,4 @@ __pycache__/
 results/*_quick/
 data/**/*.npz
 "file (afml).txt"
+results/**/runs.partial.jsonl

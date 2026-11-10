@@ -232,3 +232,9 @@ LSQ refinement (vs midpoint) but is **not** reliably cheaper than direct Brent s
 Neither tolerance pair is exactly matched (xtol 1e-3: LSQ looser in worst case; 1e-4: LSQ tighter) -> the honest
 summary is an accuracy-vs-cost curve across tolerances, not a single speedup number. The pre-registered test
 runs both settings, so this will be reported from test too.
+
+### Pilot TEST runs completed (2026-11-10) — NOT yet analyzed
+Both pre-registered runs finished on Sampreeth's laptop (resumed with checkpointed `evaluate.py`):
+`results/phaseD_v1_3seeds_test/` and `results/phaseD_v1_tightlsq_3seeds_test/`, each 450 variants x 7 methods
+= 3,150 rows. Only completion markers and row counts were checked; no test metric has been computed, printed or
+viewed. Analysis and the go/no-go verdict are handover task T1 (see `docs/preregistration_pilot_test.md`).
