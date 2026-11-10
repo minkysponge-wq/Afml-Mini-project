@@ -216,3 +216,19 @@ python -m blinit.experiments.analyze_d --dir results/phaseD_v1_tightlsq_3seeds_t
 ```
 Possible improvement before resuming (infrastructure only, not a protocol change): make `evaluate.py` append
 rows per variant and skip completed variants on restart, so future pauses lose nothing.
+
+### Accuracy-matched VALIDATION check [RESULT] (2026-11-10; `configs/phaseD_v1_tightlsq.json`: lsq xtol 1e-4, brent xatol 1e-3)
+Checkpointed `evaluate.py` used (resume verified bit-identical on smoke run). 0 simulator failures.
+CPU-s mean / median / p90: brent 9.05 / 7.41 / 17.44; mlp_s0+lsq 9.02 / 6.24 / 17.54; knn+lsq 11.52 / 7.85 / 24.96;
+midpoint+lsq 13.36 / 7.34 / 32.49; grid5+lsq 13.21 / 11.00 / 22.91. Errors vs truth identical (median 2.45e-3).
+Paired mlp - brent: median -0.65 CPU-s [95% CI -0.84, -0.22], **mean -0.035 CPU-s** -> break-even ~64,600 queries.
+CI includes 0 in 5 of 9 sensor/noise cells (s4n1%, s8n5%, s16 all noise levels).
+kNN - brent: +1.26 [+0.58, +2.38] (kNN worse). mlp - midpoint+lsq: -2.84 [-3.58, -1.89] (learned init still
+clearly helps LSQ itself).
+**Interpretation:** at the looser LSQ tolerance (xtol 1e-3) the MLP saved 1.49 CPU-s/query vs Brent; at the tighter
+one (xtol 1e-4, now more precise than Brent) the saving is ~0 on average and present only at the median. A large
+part of the earlier saving came from LSQ stopping looser in the tail. The learned initialiser reliably helps the
+LSQ refinement (vs midpoint) but is **not** reliably cheaper than direct Brent search at equal-or-better precision.
+Neither tolerance pair is exactly matched (xtol 1e-3: LSQ looser in worst case; 1e-4: LSQ tighter) -> the honest
+summary is an accuracy-vs-cost curve across tolerances, not a single speedup number. The pre-registered test
+runs both settings, so this will be reported from test too.

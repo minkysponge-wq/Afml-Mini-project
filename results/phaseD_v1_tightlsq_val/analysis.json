@@ -1,0 +1,406 @@
+{
+  "us_per_step": 144.3,
+  "n_variants": 450,
+  "methods": {
+    "brent": {
+      "rel_err_median": 0.0024733002447140245,
+      "rel_err_p90": 0.029280568808852707,
+      "solves_median": 9.0,
+      "solves_p90": 11.0,
+      "solves_mean": 9.744444444444444,
+      "cpu_s_median": 7.409805,
+      "cpu_s_p90": 17.442291360000006,
+      "cpu_s_mean": 9.051017724666666,
+      "sim_failures": 0,
+      "n_rel_obj_gap_gt_1em3": 150
+    },
+    "grid5+lsq": {
+      "rel_err_median": 0.0024458110580042897,
+      "rel_err_p90": 0.029300509681414434,
+      "solves_median": 13.0,
+      "solves_p90": 14.0,
+      "solves_mean": 12.864444444444445,
+      "cpu_s_median": 11.003740800000001,
+      "cpu_s_p90": 22.9056048,
+      "cpu_s_mean": 13.210938208,
+      "sim_failures": 0,
+      "n_rel_obj_gap_gt_1em3": 80
+    },
+    "knn+lsq": {
+      "rel_err_median": 0.0024458126070576415,
+      "rel_err_p90": 0.029295341759884994,
+      "solves_median": 12.0,
+      "solves_p90": 16.0,
+      "solves_mean": 11.686666666666667,
+      "cpu_s_median": 7.8458796,
+      "cpu_s_p90": 24.961244880000002,
+      "cpu_s_mean": 11.520536178666667,
+      "sim_failures": 0,
+      "n_rel_obj_gap_gt_1em3": 113
+    },
+    "midpoint+lsq": {
+      "rel_err_median": 0.00244581109719764,
+      "rel_err_p90": 0.029295192584098288,
+      "solves_median": 14.0,
+      "solves_p90": 20.0,
+      "solves_mean": 13.757777777777777,
+      "cpu_s_median": 7.3356348,
+      "cpu_s_p90": 32.48862552,
+      "cpu_s_mean": 13.360016782666666,
+      "sim_failures": 0,
+      "n_rel_obj_gap_gt_1em3": 118
+    },
+    "mlp_s0+lsq": {
+      "rel_err_median": 0.0024458113204029867,
+      "rel_err_p90": 0.029297791888014447,
+      "solves_median": 8.0,
+      "solves_p90": 12.0,
+      "solves_mean": 9.275555555555556,
+      "cpu_s_median": 6.2412636,
+      "cpu_s_p90": 17.543301360000005,
+      "cpu_s_mean": 9.015772930666666,
+      "sim_failures": 0,
+      "n_rel_obj_gap_gt_1em3": 114
+    }
+  },
+  "paired": {
+    "knn+lsq - brent | all": {
+      "median_cpu_s": 1.2614706,
+      "ci95": [
+        0.5748912,
+        2.3806758300000013
+      ],
+      "mean_cpu_s": 2.469518454
+    },
+    "knn+lsq - brent | s4_n0": {
+      "median_cpu_s": 0.624819,
+      "ci95": [
+        -0.090909,
+        2.2649328
+      ],
+      "mean_cpu_s": 2.436730608
+    },
+    "knn+lsq - brent | s4_n0.01": {
+      "median_cpu_s": 0.8987004000000001,
+      "ci95": [
+        0.258297,
+        2.179124805000008
+      ],
+      "mean_cpu_s": 2.7760318560000004
+    },
+    "knn+lsq - brent | s4_n0.05": {
+      "median_cpu_s": 1.5910518000000002,
+      "ci95": [
+        0.4629144,
+        2.6634894
+      ],
+      "mean_cpu_s": 2.7391458899999996
+    },
+    "knn+lsq - brent | s8_n0": {
+      "median_cpu_s": 1.2603162,
+      "ci95": [
+        0.3341988,
+        2.3177466
+      ],
+      "mean_cpu_s": 2.300061192
+    },
+    "knn+lsq - brent | s8_n0.01": {
+      "median_cpu_s": 1.2675312,
+      "ci95": [
+        0.5939388,
+        2.353533
+      ],
+      "mean_cpu_s": 2.2414176720000007
+    },
+    "knn+lsq - brent | s8_n0.05": {
+      "median_cpu_s": 1.3161603,
+      "ci95": [
+        0.7474740000000001,
+        3.0115410000000002
+      ],
+      "mean_cpu_s": 2.448384276
+    },
+    "knn+lsq - brent | s16_n0": {
+      "median_cpu_s": 1.4450202,
+      "ci95": [
+        0.4715724,
+        2.704182
+      ],
+      "mean_cpu_s": 2.478866208
+    },
+    "knn+lsq - brent | s16_n0.01": {
+      "median_cpu_s": 1.619046,
+      "ci95": [
+        0.5518032,
+        2.626411515000003
+      ],
+      "mean_cpu_s": 2.527200936
+    },
+    "knn+lsq - brent | s16_n0.05": {
+      "median_cpu_s": 1.3696956,
+      "ci95": [
+        0.3965364,
+        2.5073567999999997
+      ],
+      "mean_cpu_s": 2.2778274480000005
+    },
+    "knn+lsq - midpoint+lsq | all": {
+      "median_cpu_s": -1.4874444000000002,
+      "ci95": [
+        -1.7558424000000001,
+        -0.8340540000000001
+      ],
+      "mean_cpu_s": -1.8394806040000002
+    },
+    "knn+lsq - midpoint+lsq | s4_n0": {
+      "median_cpu_s": -1.5134184000000002,
+      "ci95": [
+        -2.1137064,
+        -0.614790149999994
+      ],
+      "mean_cpu_s": -1.681718376
+    },
+    "knn+lsq - midpoint+lsq | s4_n0.01": {
+      "median_cpu_s": -1.3616148,
+      "ci95": [
+        -1.7038944,
+        -0.5010096
+      ],
+      "mean_cpu_s": -1.391525304
+    },
+    "knn+lsq - midpoint+lsq | s4_n0.05": {
+      "median_cpu_s": -1.1786424000000002,
+      "ci95": [
+        -2.1194783999999998,
+        -0.3999996
+      ],
+      "mean_cpu_s": -1.4623650600000002
+    },
+    "knn+lsq - midpoint+lsq | s8_n0": {
+      "median_cpu_s": -1.5001427999999999,
+      "ci95": [
+        -2.430012,
+        -0.8363628000000001
+      ],
+      "mean_cpu_s": -1.79832432
+    },
+    "knn+lsq - midpoint+lsq | s8_n0.01": {
+      "median_cpu_s": -1.480518,
+      "ci95": [
+        -2.1396804,
+        -0.6279936
+      ],
+      "mean_cpu_s": -2.04282624
+    },
+    "knn+lsq - midpoint+lsq | s8_n0.05": {
+      "median_cpu_s": -1.4995656,
+      "ci95": [
+        -1.9428552000000001,
+        -0.4548336
+      ],
+      "mean_cpu_s": -1.838993832
+    },
+    "knn+lsq - midpoint+lsq | s16_n0": {
+      "median_cpu_s": -1.4551212,
+      "ci95": [
+        -1.7327544000000001,
+        -0.5720052
+      ],
+      "mean_cpu_s": -2.005377504
+    },
+    "knn+lsq - midpoint+lsq | s16_n0.01": {
+      "median_cpu_s": -1.4585844,
+      "ci95": [
+        -1.99134,
+        -0.5656559999999999
+      ],
+      "mean_cpu_s": -2.0273457359999996
+    },
+    "knn+lsq - midpoint+lsq | s16_n0.05": {
+      "median_cpu_s": -1.526694,
+      "ci95": [
+        -2.4190452000000002,
+        -0.6259733999999999
+      ],
+      "mean_cpu_s": -2.306849064
+    },
+    "mlp_s0+lsq - brent | all": {
+      "median_cpu_s": -0.6455982,
+      "ci95": [
+        -0.83523726,
+        -0.2155842
+      ],
+      "mean_cpu_s": -0.03524479399999996
+    },
+    "mlp_s0+lsq - brent | s4_n0": {
+      "median_cpu_s": -0.42683940000000004,
+      "ci95": [
+        -0.7122648,
+        -0.07985561999999864
+      ],
+      "mean_cpu_s": 0.16057704
+    },
+    "mlp_s0+lsq - brent | s4_n0.01": {
+      "median_cpu_s": -0.3818178,
+      "ci95": [
+        -0.7919184000000001,
+        0.23318880000000003
+      ],
+      "mean_cpu_s": 0.32967355200000015
+    },
+    "mlp_s0+lsq - brent | s4_n0.05": {
+      "median_cpu_s": -0.8444436,
+      "ci95": [
+        -1.2531012000000001,
+        -0.05772000000000001
+      ],
+      "mean_cpu_s": -0.34668075000000004
+    },
+    "mlp_s0+lsq - brent | s8_n0": {
+      "median_cpu_s": -1.0199124,
+      "ci95": [
+        -1.4187576,
+        -0.4623372
+      ],
+      "mean_cpu_s": -0.055653624000000075
+    },
+    "mlp_s0+lsq - brent | s8_n0.01": {
+      "median_cpu_s": -1.171716,
+      "ci95": [
+        -1.6210662,
+        -0.5771999999999999
+      ],
+      "mean_cpu_s": -0.231122424
+    },
+    "mlp_s0+lsq - brent | s8_n0.05": {
+      "median_cpu_s": -0.36017279999999996,
+      "ci95": [
+        -1.3489164,
+        0.1864356
+      ],
+      "mean_cpu_s": -0.146730012
+    },
+    "mlp_s0+lsq - brent | s16_n0": {
+      "median_cpu_s": -0.2819622,
+      "ci95": [
+        -0.8894652000000001,
+        0.4669548
+      ],
+      "mean_cpu_s": 0.06585852000000003
+    },
+    "mlp_s0+lsq - brent | s16_n0.01": {
+      "median_cpu_s": -0.2398266,
+      "ci95": [
+        -0.7757568,
+        0.4479072
+      ],
+      "mean_cpu_s": -0.027924936000000015
+    },
+    "mlp_s0+lsq - brent | s16_n0.05": {
+      "median_cpu_s": -0.33506460000000005,
+      "ci95": [
+        -0.9898980000000001,
+        0.4161612
+      ],
+      "mean_cpu_s": -0.06520051199999996
+    },
+    "mlp_s0+lsq - midpoint+lsq | all": {
+      "median_cpu_s": -2.8404012,
+      "ci95": [
+        -3.58154043,
+        -1.8885984000000002
+      ],
+      "mean_cpu_s": -4.344243852
+    },
+    "mlp_s0+lsq - midpoint+lsq | s4_n0": {
+      "median_cpu_s": -2.591628,
+      "ci95": [
+        -3.3569952,
+        -1.8470400000000002
+      ],
+      "mean_cpu_s": -3.9578719440000003
+    },
+    "mlp_s0+lsq - midpoint+lsq | s4_n0.01": {
+      "median_cpu_s": -2.6401128,
+      "ci95": [
+        -3.4311654000000003,
+        -1.7800848
+      ],
+      "mean_cpu_s": -3.8378836080000003
+    },
+    "mlp_s0+lsq - midpoint+lsq | s4_n0.05": {
+      "median_cpu_s": -3.0204876,
+      "ci95": [
+        -3.9041808000000002,
+        -1.8014412000000002
+      ],
+      "mean_cpu_s": -4.5481917
+    },
+    "mlp_s0+lsq - midpoint+lsq | s8_n0": {
+      "median_cpu_s": -3.252522,
+      "ci95": [
+        -3.8533872,
+        -1.9440096
+      ],
+      "mean_cpu_s": -4.154039136
+    },
+    "mlp_s0+lsq - midpoint+lsq | s8_n0.01": {
+      "median_cpu_s": -3.3754656,
+      "ci95": [
+        -3.8660856,
+        -2.4277032
+      ],
+      "mean_cpu_s": -4.5153663360000005
+    },
+    "mlp_s0+lsq - midpoint+lsq | s8_n0.05": {
+      "median_cpu_s": -3.2617572,
+      "ci95": [
+        -4.0011504,
+        -2.0109648
+      ],
+      "mean_cpu_s": -4.43410812
+    },
+    "mlp_s0+lsq - midpoint+lsq | s16_n0": {
+      "median_cpu_s": -2.7999972,
+      "ci95": [
+        -3.5290008,
+        -1.6966794
+      ],
+      "mean_cpu_s": -4.418385192
+    },
+    "mlp_s0+lsq - midpoint+lsq | s16_n0.01": {
+      "median_cpu_s": -2.6747448,
+      "ci95": [
+        -3.6340512,
+        -1.6946592
+      ],
+      "mean_cpu_s": -4.582471608
+    },
+    "mlp_s0+lsq - midpoint+lsq | s16_n0.05": {
+      "median_cpu_s": -2.9379480000000004,
+      "ci95": [
+        -3.6663744,
+        -1.8164484
+      ],
+      "mean_cpu_s": -4.649877024
+    }
+  },
+  "break_even": {
+    "knn+lsq": {
+      "vs": "brent",
+      "offline_cpu_s": 1837.4773271000158,
+      "offline_note": "train-data generation (wall x workers, upper bound) + tuning + training / library build",
+      "per_query_saving_cpu_s": -2.4717517224444467,
+      "break_even_queries": null,
+      "verdict": "no finite break-even (saving <= 0)"
+    },
+    "mlp_s0+lsq": {
+      "vs": "brent",
+      "offline_cpu_s": 2253.9545942000113,
+      "offline_note": "train-data generation (wall x workers, upper bound) + tuning + training / library build",
+      "per_query_saving_cpu_s": 0.03488399398845132,
+      "break_even_queries": 64612.85926566219,
+      "verdict": "finite"
+    }
+  }
+}
