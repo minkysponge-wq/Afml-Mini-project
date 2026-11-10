@@ -90,8 +90,22 @@ def main():
     n = len(X) if args.limit is None else args.limit
     tasks = [(v, T["amps"][O["parent"][v]], T["phases"][O["parent"][v]], O["y"][v], O["mask"][v],
               float(T["nu"][O["parent"][v]]), {k: float(a[v]) for k, a in inits.items()}, cfg) for v in range(n)]
-    rows, t_start = [], time.time()
-    with ProcessPoolExecutor(max_workers=args.workers) as ex:
+    # checkpointing: every finished variant is appended to runs.partial.jsonl; a restart skips them.
+    # Results per variant are deterministic, so resumed and uninterrupted runs give identical rows.
+    partial = out / "runs.partial.jsonl"
+    rows = [json.loads(l) for l in partial.read_text().splitlines()] if partial.exists() else []
+    per_variant = 3 + len(inits)
+    counts = {}
+    for r in rows:
+        counts[r["variant"]] = counts.get(r["variant"], 0) + 1
+    done = {v for v, c in counts.items() if c == per_variant}
+    rows = [r for r in rows if r["variant"] in done]          # drop any half-written variant
+    tasks = [t for t in tasks if t[0] not in done]
+    if done:
+        print(f"resuming: {len(done)} variants already done, {len(tasks)} to go", flush=True)
+    partial.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    t_start = time.time()
+    with ProcessPoolExecutor(max_workers=args.workers) as ex, open(partial, "a") as fp:
         for k, rs in enumerate(ex.map(run_variant, tasks, chunksize=2)):
             for r in rs:
                 v = r["variant"]
@@ -101,8 +115,10 @@ def main():
                 if init_name in inits:
                     r["init_rel_err"] = float(abs(np.exp(inits[init_name][v]) - r["nu_true"]) / r["nu_true"])
             rows += rs
+            fp.write("".join(json.dumps(r) + "\n" for r in rs)); fp.flush()
             if (k + 1) % 25 == 0:
-                print(f"{k+1}/{n} variants ({time.time()-t_start:.0f}s)", flush=True)
+                print(f"{len(done) + k + 1}/{n} variants ({time.time()-t_start:.0f}s)", flush=True)
+    rows.sort(key=lambda r: (r["variant"], r["method"]))
     keys = sorted({k for r in rows for k in r})
     with open(out / "runs.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=keys); w.writeheader(); w.writerows(rows)

@@ -88,16 +88,16 @@
   ],
   "init_overhead": {
     "knn": {
-      "build_s": 0.043646000000080676,
-      "per_query_s": 0.002182011111108295
+      "build_s": 0.06415170000400394,
+      "per_query_s": 0.002114730222221826
     },
     "mlp_s0": {
       "train_s": 103.6264857999995,
-      "per_query_batched_s": 1.6775333335519666e-05,
-      "per_query_single_s": 0.00013929999840911478
+      "per_query_batched_s": 8.281333333191772e-06,
+      "per_query_single_s": 0.00033320000511594117
     }
   },
-  "workers": 4,
+  "workers": 2,
   "timing_note": "parallel workers: use solve counts; wall times indicative only",
-  "finished": "2026-11-09 16:54:47"
+  "finished": "2026-11-10 16:12:01"
 }
