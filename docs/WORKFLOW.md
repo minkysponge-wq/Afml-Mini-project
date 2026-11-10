@@ -1,6 +1,6 @@
 # Project workflow: status and phase plan
 
-*Last updated 2026-11-09 (evening). **PAUSED** — see `RESEARCH_LOG.md` → "PAUSED by user" for resume commands. Each phase lists tasks, outputs and an **exit gate**: a concrete check
+*Last updated 2026-11-09 (evening). Handed over to the teammate; see the handover doc and `RESEARCH_LOG.md`. Plain-language explainer: `docs/How_Our_Project_Works.pdf`. Each phase lists tasks, outputs and an **exit gate**: a concrete check
 that must pass before the next phase starts. "Verified" means the result exists on disk and was
 checked; anything else is a plan.*
 
@@ -22,8 +22,8 @@ checked; anything else is a plan.*
 | Phase B dataset (v2: 3000/50/50, 9 integrity checks pass) | Done, verified | `data/phaseB_v2/integrity.json` |
 | Phase C MLP (3 seeds; val median error 8–12%) | Done, verified | `models/phaseC_v2/` |
 | Phase D comparison on validation | Done, verified (MLP vs Brent: −1.49 CPU-s/query, CI [−1.84, −1.16]; 1.17–1.35×) | `results/phaseD_v1_val/` |
-| Accuracy-matched validation check | **Paused** (not saved; rerun) | `configs/phaseD_v1_tightlsq.json` |
-| Pilot test (pre-registered, 3 seeds × 2 tolerances) | **Paused** (not saved; rerun) | `docs/preregistration_pilot_test.md` |
+| Accuracy-matched validation check | Done, verified (MLP vs Brent: −0.65 CPU-s median, ≈0 mean) | `results/phaseD_v1_tightlsq_val/` |
+| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Runs complete, **not yet analyzed** (handover task T1) | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
 | Go/no-go (E), scale (F), report (G), submission (H) | Not started | — |
 
 ### Verified Phase A findings
