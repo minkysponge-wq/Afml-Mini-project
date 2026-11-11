@@ -351,3 +351,60 @@ sensors cost little. At 16 sensors the augmentation neither helps nor hurts.**
 **The network uses the known starting state only when sensors are few; with 8 or 16 sensors the readings alone
 carry the same information. The proposal's claim that the IC inputs matter is supported at 4 sensors only.**
 Caveat: validation was also used for early stopping and tuning of every model compared here, equally for all.
+
+### T2 — Accuracy-versus-cost curves across tolerances [RESULT] (2026-11-11, validation only)
+Code: `--methods` option in `evaluate.py` (+ `tests/test_evaluate.py`), `blinit/experiments/tolerance_curves.py`.
+Configs `configs/phaseF_tol_{anchor,brent1e-2,brent1e-4,lsq1e-2,lsq1e-5}.json`; the 1e-3 points and LSQ 1e-4 reuse
+`results/phaseD_v1_val` and `results/phaseD_v1_tightlsq_val`. Reference nu_ref per case = Brent at xatol 1e-7 (anchor
+run, not a method). Outputs: `results/phaseF_tolerance/{curves.csv, matched.json, tolerance_curves.png}`.
+Precision = |nu_hat - nu_ref| / nu_ref over 450 validation variants. Cost = mean CPU-s per query.
+
+| method | tol | mean CPU-s | p90 precision | max precision |
+|---|---|---|---|---|
+| brent | 1e-2 / 1e-3 / 1e-4 | 8.03 / 9.05 / 9.88 | 1.5e-3 / 1.5e-4 / 1.4e-5 | 6.2e-3 / 6.1e-4 / 6.5e-5 |
+| midpoint+lsq | 1e-2 / 1e-3 / 1e-4 / 1e-5 | 9.45 / 11.86 / 13.36 / 14.33 | 1.2e-2 / 1.2e-4 / 5.4e-6 / 3.8e-7 | 5.2e-2 / 3.5e-3 / 1.1e-3 / 1.1e-3 |
+| mlp_s0+lsq | 1e-2 / 1e-3 / 1e-4 / 1e-5 | 5.90 / 7.72 / 9.02 / 9.93 | 8.2e-3 / 1.0e-4 / 4.9e-6 / 4.1e-7 | 4.3e-2 / 2.5e-3 / 5.0e-4 / 2.7e-4 |
+
+Cost ratio Brent / MLP at matched precision (log-log interpolation along each curve):
+- matched on p90 precision: 1.22 (at 1e-3), 1.21 (3e-4), 1.19 (1e-4), 1.17 (3e-5) on mean CPU-s; 1.38-1.40 on median CPU-s.
+- matched on max precision: 1.05 (at 1e-3), 0.95 (3e-4) on mean CPU-s; 1.23 / 1.10 on median CPU-s.
+**Reading:** at equal typical precision the learned start is about 1.2x cheaper than Brent on average, at equal
+worst-case precision about 1.0x. The worst case is where LSQ is weak: from a midpoint start one validation case stays
+at 1.1e-3 error whatever xtol is (1e-4 and 1e-5), and from the MLP start the max error falls slowly (5.0e-4 to 2.7e-4)
+while Brent's falls tenfold per tolerance step. This explains the T1 pattern: the primary pair (xtol 1e-3) gave a
+saving because LSQ stops looser in the tail; the matched pair (xtol 1e-4) removed it. **The 2x target is not reached at
+any matched precision.** Caveats: validation only (also used for MLP early stopping and tuning, which favours the
+MLP); one anchor run per case as reference; interpolation between 3-4 points per curve.
+
+### T4 — Robustness test sets [RESULT] (2026-11-11; pre-registered in docs/preregistration_phaseF.md)
+Command per set: `python -m blinit.experiments.evaluate --config configs/phaseD_v1_test.json --split test --test-dir
+data/phaseF_<set> --workers 9`, then `analyze_d`. Primary tolerance only (as pre-registered). 0 simulator failures.
+Accuracy is the same for every method within each set.
+Bug found after the runs and fixed (no number affected): `analyze_d.py` reused the name `d` for a per-mask dict,
+which crashed when writing `analysis.json` for the unseen-mask set; renamed to `cell` and the analysis rerun on the
+saved `runs.csv` (the evaluation was not repeated).
+
+| set | median rel. err (all methods) | MLP alone, median (seeds 0/1/2) | MLP - brent, median CPU-s [95% CI] seeds 0 / 1 / 2 | primary-tolerance criterion |
+|---|---|---|---|---|
+| pilot test (reference) | 0.22% | 10.2 / 9.1 / 13.7% | -1.07 [-1.40,-0.83] / -0.95 [-1.35,-0.63] / -0.80 [-1.18,-0.42] | met (3/3) |
+| high-frequency IC (modes 2,3,4) | 0.14% | 32.9 / 28.0 / 30.4% | +0.21 [-0.66,+0.94] / +0.07 [-0.69,+0.86] / +0.38 [-0.27,+1.06] | not met (0/3) |
+| fine-grid data (1,024 cells) | 0.62% | 9.2 / 8.9 / 10.9% | -1.41 [-1.68,-1.04] / -1.25 [-1.54,-0.99] / -1.19 [-1.46,-0.83] | met (3/3) |
+| unseen masks, all 6 masks | 0.31% | 42.3 / 36.4 / 36.6% | -0.11 [-0.42,+0.40] / -0.20 [-0.52,+0.44] / -0.28 [-0.62,+0.28] | not met (0/3) |
+| - the 4 unseen masks only | | 49-61% (seed 0, per mask) | +0.64 [-0.01,+1.58] / +0.70 [-0.09,+1.69] / +0.40 [-0.23,+1.51] | not met (0/3) |
+| - the 2 seen masks only | | 8.8% (nested 8), 17.6% (nested 4), seed 0 | -0.91 [-1.50,-0.55] / -1.17 [-1.49,-0.73] / -1.08 [-1.48,-0.70] | met (3/3) |
+
+Median CPU ratio brent / MLP: high-frequency 1.00-1.08; fine-grid 1.19-1.22; break-even vs brent: fine-grid
+1,567 / 1,957 / 2,606 queries (seeds 0/1/2); high-frequency and unseen masks: no finite break-even (mean saving <= 0).
+kNN on unseen masks (all-sensor fallback): neural-only median 22-31% per mask (better than the MLP's 49-61%), but
+kNN+LSQ - brent is +0.39 [+0.13, +1.03] on unseen masks (costlier than Brent).
+MLP+LSQ - midpoint+LSQ stays negative everywhere except two unseen masks where the CI includes 0 (every4_shift for
+seeds 0 and 1, random8/random4 for some seeds).
+**Verdicts:** (1) High-frequency ICs: the MLP's start is 3x worse (about 30% vs 10%), the refinement absorbs it at extra
+cost, and the saving vs Brent disappears. (2) Fine-grid data: discretisation mismatch raises everyone's error to 0.62%
+(model error, not method error); the saving vs Brent holds (about 1.2x) because the inputs look like training inputs.
+(3) Unseen masks: on the four patterns never seen in training the MLP alone is no better than the midpoint guess (57%
+on validation) and the saving vs Brent is gone; on the two seen patterns, same trajectories, it remains. Sensor-dropout
+augmentation (T5b) helps only for patterns that were in the augmentation.
+Expected before the runs (pre-registration): a jump in neural-only error with little change after refinement, and
+worse identifiability at high nu for high-frequency ICs. Both seen; overall error on the high-frequency set was in
+fact lower (0.14%), because more modes carry more information at low nu.

@@ -92,14 +92,14 @@ def main():
             out["by_mask"][k] = {}
             for m in methods:
                 rs = [by[(m, v)] for v in variants if by[(m, v)]["mask_name"] == k]
-                d = dict(n=len(rs), rel_err_median=float(np.median([r["rel_err"] for r in rs])),
+                cell = dict(n=len(rs), rel_err_median=float(np.median([r["rel_err"] for r in rs])),
                          rel_err_p90=float(np.percentile([r["rel_err"] for r in rs], 90)),
                          cpu_s_median=float(np.median([r["solver_steps"] for r in rs]) * args.us_per_step * 1e-6),
                          cpu_s_mean=float(np.mean([r["solver_steps"] for r in rs]) * args.us_per_step * 1e-6))
                 ie = [float(r["init_rel_err"]) for r in rs if r.get("init_rel_err") not in (None, "")]
                 if ie:
-                    d.update(init_rel_err_median=float(np.median(ie)), init_rel_err_p90=float(np.percentile(ie, 90)))
-                out["by_mask"][k][m] = d
+                    cell.update(init_rel_err_median=float(np.median(ie)), init_rel_err_p90=float(np.percentile(ie, 90)))
+                out["by_mask"][k][m] = cell
     for L in learned:
         for B in classical:
             for key, sel in cells:
