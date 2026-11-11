@@ -1,0 +1,60 @@
+{
+  "checks": {
+    "ic_seeds_disjoint_from_base_dataset": true,
+    "ic_seeds_unique": true,
+    "variants_parent_in_range": true,
+    "nan_iff_masked": true,
+    "nu_within_bounds": true,
+    "all_finite_clean": true,
+    "sensor_mapping_reproducible": true,
+    "params_reproducible": true,
+    "noise_free_equal_clean_where_available": true
+  },
+  "all_passed": true,
+  "n_base_seeds": 3100,
+  "n_trajectories": 50,
+  "n_variants": 450,
+  "generation_wall_seconds": 5.890193999977782,
+  "workers": 6,
+  "config": {
+    "config_version": "phaseF_highfreq",
+    "simulator_config": "simulator_v1.json",
+    "base_seed": 7202611,
+    "splits": {
+      "test": 50
+    },
+    "ic_seed_offset": {
+      "test": 3000000
+    },
+    "nu_sampling": "log-uniform on [0.01, 0.1]: the target is log nu, the bounds span one decade, and uniform-in-log gives every scale equal weight (matches the optimiser's parameterisation)",
+    "ic": {
+      "modes": [
+        2,
+        3,
+        4
+      ],
+      "amp": "U(0,1)",
+      "phase": "U(0,2pi)"
+    },
+    "observation_variants": {
+      "n_sensors": [
+        4,
+        8,
+        16
+      ],
+      "noise_levels": [
+        0.0,
+        0.01,
+        0.05
+      ],
+      "noise_def": "sigma = level * RMS(clean 16x4 observations of the parent trajectory)",
+      "masks": "nested evenly spaced (seen patterns); train-only random-dropout augmentation is a separate, documented option",
+      "train_random_dropout_variants_per_traj": 0
+    },
+    "normalisation": "per-observation-time mean/std over available TRAIN readings only; missing readings set to 0 after standardisation (= train mean) and flagged by the mask",
+    "change_note": "T4 robustness set: IC sine modes 2,3,4 instead of 1,2,3. Test split only; pre-registered in docs/preregistration_phaseF.md.",
+    "base_dataset": "phaseB_v2",
+    "sim_nx": null
+  },
+  "finished": "2026-11-11 16:06:40"
+}

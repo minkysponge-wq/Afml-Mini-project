@@ -1,0 +1,126 @@
+{
+  "checks": {
+    "ic_seeds_disjoint_from_base_dataset": true,
+    "ic_seeds_unique": true,
+    "variants_parent_in_range": true,
+    "nan_iff_masked": true,
+    "nu_within_bounds": true,
+    "all_finite_clean": true,
+    "sensor_mapping_reproducible": true,
+    "params_reproducible": true,
+    "noise_free_equal_clean_where_available": true
+  },
+  "all_passed": true,
+  "n_base_seeds": 3100,
+  "n_trajectories": 50,
+  "n_variants": 900,
+  "generation_wall_seconds": 5.71065489994362,
+  "workers": 6,
+  "config": {
+    "config_version": "phaseF_unseenmask",
+    "simulator_config": "simulator_v1.json",
+    "base_seed": 7202611,
+    "splits": {
+      "test": 50
+    },
+    "ic_seed_offset": {
+      "test": 5000000
+    },
+    "nu_sampling": "log-uniform on [0.01, 0.1]: the target is log nu, the bounds span one decade, and uniform-in-log gives every scale equal weight (matches the optimiser's parameterisation)",
+    "ic": {
+      "modes": [
+        1,
+        2,
+        3
+      ],
+      "amp": "U(0,1)",
+      "phase": "U(0,2pi)"
+    },
+    "observation_variants": {
+      "n_sensors": "see masks",
+      "noise_levels": [
+        0.0,
+        0.01,
+        0.05
+      ],
+      "noise_def": "sigma = level * RMS(clean 16x4 observations of the parent trajectory)",
+      "masks": "named masks listed under 'masks' (slot indices that are ON)",
+      "train_random_dropout_variants_per_traj": 0
+    },
+    "normalisation": "per-observation-time mean/std over available TRAIN readings only; missing readings set to 0 after standardisation (= train mean) and flagged by the mask",
+    "change_note": "T4 robustness set: sensor-availability patterns never seen in training (plus the nested 8/4 patterns as same-trajectory references). Test split only; pre-registered in docs/preregistration_phaseF.md.",
+    "base_dataset": "phaseB_v2",
+    "sim_nx": null,
+    "masks": {
+      "half_left": {
+        "on": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ],
+        "seen_in_training": false
+      },
+      "random8": {
+        "on": [
+          0,
+          1,
+          2,
+          4,
+          5,
+          7,
+          9,
+          10
+        ],
+        "seen_in_training": false,
+        "rule": "sorted(default_rng(5_000_001).choice(16, 8, replace=False))"
+      },
+      "random4": {
+        "on": [
+          2,
+          4,
+          13,
+          15
+        ],
+        "seen_in_training": false,
+        "rule": "sorted(default_rng(5_000_002).choice(16, 4, replace=False))"
+      },
+      "every4_shift": {
+        "on": [
+          1,
+          5,
+          9,
+          13
+        ],
+        "seen_in_training": false
+      },
+      "seen_nested8": {
+        "on": [
+          0,
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14
+        ],
+        "seen_in_training": true
+      },
+      "seen_nested4": {
+        "on": [
+          0,
+          4,
+          8,
+          12
+        ],
+        "seen_in_training": true
+      }
+    }
+  },
+  "finished": "2026-11-11 16:06:48"
+}

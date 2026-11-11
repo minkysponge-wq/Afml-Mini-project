@@ -285,3 +285,46 @@ the refinement is run to equal-or-better precision. Phase F explains this (T2 to
 and tests whether it holds under shift (T4), with ablations (T5).
 Caveats: 50 test trajectories; neither tolerance pair is exactly precision-matched (T2 addresses this); cost is solver
 steps x 144.3 us, not wall time.
+
+### T0 — fresh-clone reproduction (2026-11-11)
+Clone at 2581dc0: 16/16 tests pass; `analyze_d --dir results/phaseD_v1_val` prints `mlp_s0+lsq - brent | all`
+median -1.491, CI [-1.844, -1.161] (matches). `build_dataset --config configs/phaseB_v2.json --workers 8` rebuilt the
+dataset (train 193 s wall): all 9 integrity checks true. The committed `data/phaseB_v2/integrity.json` was kept, so
+break-even numbers still use the original generation wall time.
+
+### T3 — Cramér–Rao bound [RESULT] (2026-11-11)
+Code: `blinit/crb.py`, `blinit/experiments/crb.py`, `tests/test_crb.py` (3 tests). Commands:
+`python -m blinit.experiments.crb --split val` and `--split test`. Outputs: `results/phaseF_crb/`.
+300 noisy variants per split (50 trajectories x 3 sensor counts x 1% and 5% noise); sensitivity by central difference
+in log nu, h = 1e-3 (h = 1e-4 agrees within 1%, tested).
+z = (theta_hat - theta_true) / sqrt(CRB), all noisy variants: validation std(z) 0.965 (brent) and 0.966 (mlp_s0+lsq),
+mean z +0.06; test std(z) 0.947 and 0.944, mean z -0.002. Fraction with |z| > 2: 3.3-4.7% (5% expected for a
+unit normal). Per condition std(z) lies in 0.77-1.07; RMSE / sqrt(mean CRB) lies in 0.50-1.15 (validation) and
+0.70-1.12 (test).
+**In one sentence: both Brent and MLP+LSQ reach the Cramér–Rao bound within sampling error, so the remaining error is
+set by the data and no method can be more accurate; methods can differ only in cost.**
+Caveats: the bound assumes an unbiased estimator and Gaussian noise and ignores the parameter bounds; noise-free
+variants are excluded (bound 0); one noise draw per case, so only the aggregate is meaningful; the per-condition
+ratio uses sqrt(mean CRB), which a few weakly identified trajectories dominate (this is why some ratios are below 1).
+
+### Phase F code and pre-registration (2026-11-11, commit bde5604)
+`docs/preregistration_phaseF.md` and all T2/T4/T5 code were committed before any robustness set was generated.
+26 tests pass. The three sets were then built with `python -m blinit.experiments.build_shift_set --config
+configs/phaseF_<set>.json --workers 6`: highfreq (450 variants), unseenmask (900), finegrid (450, 147 s wall); all 9
+integrity checks true for each, including IC seeds disjoint from the 3,100 seeds of phaseB_v2.
+
+### PAUSED by user (2026-11-11) — state of the runs
+- T2 tolerance runs (validation): `phaseF_tol_anchor` complete (450/450); `phaseF_tol_brent1e-2` stopped at 444/450
+  rows (checkpointed, resumes); `brent1e-4`, `lsq1e-2`, `lsq1e-5` not started. No tolerance-curve result exists yet.
+- T5: `models/phaseC_v2_noaug` trained (3 seeds); `phaseC_v2_noic` stopped during tuning (rerun from scratch, ~8 min).
+  `ablations.py` not yet run.
+- T4: evaluation of `phaseF_highfreq` stopped before any variant was written; no robustness result has been
+  computed, printed or viewed. `phaseF_finegrid` and `phaseF_unseenmask` not started.
+- T7: `docs/literature_audit.md` and `docs/bibliography.md` updated (11 works opened).
+To resume:
+```
+for t in "brent1e-2 brent" "brent1e-4 brent" "lsq1e-2 midpoint,mlp" "lsq1e-5 midpoint,mlp"; do set -- $t; python -m blinit.experiments.evaluate --config configs/phaseF_tol_$1.json --split val --methods $2 --workers 12; done
+python -m blinit.experiments.tolerance_curves
+python -m blinit.experiments.train_mlp --config configs/phaseC_v2_noic.json && python -m blinit.experiments.ablations
+for s in highfreq finegrid unseenmask; do python -m blinit.experiments.evaluate --config configs/phaseD_v1_test.json --split test --test-dir data/phaseF_$s --workers 12; python -m blinit.experiments.analyze_d --dir results/phaseD_v1_3seeds_test_phaseF_$s; done
+```

@@ -69,15 +69,40 @@ def main():
             cpu_s_mean=float(st.mean() * args.us_per_step * 1e-6),
             sim_failures=int(sum(r["sim_failures"] for r in rs)),
             n_rel_obj_gap_gt_1em3=int(np.sum(gap > 1e-3)))
+        ie = np.array([float(r["init_rel_err"]) for r in rs if r.get("init_rel_err") not in (None, "")])
+        if len(ie):       # error of the initial guess alone (learned / kNN initialisers), before refinement
+            out["methods"][m].update(init_rel_err_median=float(np.median(ie)),
+                                     init_rel_err_p90=float(np.percentile(ie, 90)))
     # paired comparisons vs each classical baseline, by condition too
     classical = [m for m in ("brent", "midpoint+lsq") if m in methods]
     learned = [m for m in methods if m.startswith(("mlp", "knn"))]
     out["paired"] = {}
+    # named sensor masks (T4 unseen-mask set): extra cells per mask and for seen vs unseen patterns
+    mask_names = list(dict.fromkeys(r["mask_name"] for r in rows)) if rows[0].get("mask_name") else []
+    cells = [("all", lambda r: True)] + [
+        (f"s{s}_n{n:g}", (lambda s, n: (lambda r: r["n_sensors"] == s and r["noise"] == n))(s, n))
+        for s in (4, 8, 16) for n in (0.0, 0.01, 0.05)]
+    if mask_names:
+        cells = [("all", lambda r: True),
+                 ("masks_unseen", lambda r: not r["mask_name"].startswith("seen_")),
+                 ("masks_seen", lambda r: r["mask_name"].startswith("seen_"))]
+        cells += [(f"mask_{k}", (lambda k: (lambda r: r["mask_name"] == k))(k)) for k in mask_names]
+        out["by_mask"] = {}
+        for k in mask_names:
+            out["by_mask"][k] = {}
+            for m in methods:
+                rs = [by[(m, v)] for v in variants if by[(m, v)]["mask_name"] == k]
+                d = dict(n=len(rs), rel_err_median=float(np.median([r["rel_err"] for r in rs])),
+                         rel_err_p90=float(np.percentile([r["rel_err"] for r in rs], 90)),
+                         cpu_s_median=float(np.median([r["solver_steps"] for r in rs]) * args.us_per_step * 1e-6),
+                         cpu_s_mean=float(np.mean([r["solver_steps"] for r in rs]) * args.us_per_step * 1e-6))
+                ie = [float(r["init_rel_err"]) for r in rs if r.get("init_rel_err") not in (None, "")]
+                if ie:
+                    d.update(init_rel_err_median=float(np.median(ie)), init_rel_err_p90=float(np.percentile(ie, 90)))
+                out["by_mask"][k][m] = d
     for L in learned:
         for B in classical:
-            for key, sel in [("all", lambda r: True)] + [
-                    (f"s{s}_n{n:g}", (lambda s, n: (lambda r: r["n_sensors"] == s and r["noise"] == n))(s, n))
-                    for s in (4, 8, 16) for n in (0.0, 0.01, 0.05)]:
+            for key, sel in cells:
                 dpar = {}
                 for v in variants:
                     rl, rb = by[(L, v)], by[(B, v)]
@@ -111,32 +136,42 @@ def main():
     (d / "analysis.json").write_text(json.dumps(out, indent=2))
 
     # figure: cost and error per method by condition
-    conds = [(s, n) for s in (4, 8, 16) for n in (0.0, 0.01, 0.05)]
-    fig, axs = plt.subplots(1, 2, figsize=(12, 4))
+    if mask_names:
+        conds = [(k, n) for k in mask_names for n in (0.0, 0.01, 0.05)]
+        in_cond = lambda r, c: r["mask_name"] == c[0] and r["noise"] == c[1]
+        labels = [f"{k.replace('seen_', '').replace('_', chr(10))}" + chr(10) + f"{n:.0%}" for k, n in conds]
+    else:
+        conds = [(s, n) for s in (4, 8, 16) for n in (0.0, 0.01, 0.05)]
+        in_cond = lambda r, c: r["n_sensors"] == c[0] and r["noise"] == c[1]
+        labels = [f"{s}s" + chr(10) + f"{n:.0%}" for s, n in conds]
+    fig, axs = plt.subplots(1, 2, figsize=(12 if not mask_names else 16, 4))
     w = 0.8 / len(methods)
     for k, m in enumerate(methods):
         cpu, err = [], []
-        for s, n in conds:
-            rs = [by[(m, v)] for v in variants if by[(m, v)]["n_sensors"] == s and by[(m, v)]["noise"] == n]
+        for c in conds:
+            rs = [by[(m, v)] for v in variants if in_cond(by[(m, v)], c)]
             cpu.append(np.median([r["solver_steps"] for r in rs]) * args.us_per_step * 1e-6)
             err.append(np.median([r["rel_err"] for r in rs]))
         x = np.arange(len(conds)) + (k - len(methods) / 2 + 0.5) * w
         axs[0].bar(x, cpu, w * 0.9, color=SERIES[k % 6], label=m)
         axs[1].plot(np.arange(len(conds)), err, "o-", color=SERIES[k % 6], label=m, ms=4)
     for a in axs:
-        a.set_xticks(np.arange(len(conds)), [f"{s}s\n{n:.0%}" for s, n in conds], fontsize=7)
+        a.set_xticks(np.arange(len(conds)), labels, fontsize=7 if not mask_names else 5)
         a.spines[["top", "right"]].set_visible(False)
     axs[0].set_ylabel("median CPU-s per query (steps x us/step)"); axs[0].legend(fontsize=7, frameon=False)
     axs[1].set_yscale("log"); axs[1].set_ylabel("median relative error vs true nu")
-    fig.suptitle(f"Phase D ({meta['split']} split): cost and accuracy by sensors / noise")
+    where = f"{meta['split']} split" + (f", {Path(meta['test_dir']).name}" if meta.get("test_dir") else "")
+    fig.suptitle(f"Phase D ({where}): cost and accuracy by sensors / noise")
     fig.tight_layout(); fig.savefig(d / "cost_accuracy_by_condition.png", dpi=150); plt.close(fig)
 
     for m, v in out["methods"].items():
         print(f"{m:14s} err med {v['rel_err_median']:.2e} p90 {v['rel_err_p90']:.2e} | solves med {v['solves_median']:4.1f} "
               f"mean {v['solves_mean']:5.2f} | CPU-s mean {v['cpu_s_mean']:.2f} med {v['cpu_s_median']:.2f} p90 {v['cpu_s_p90']:.2f} "
-              f"| fails {v['sim_failures']} gaps {v['n_rel_obj_gap_gt_1em3']}")
+              f"| fails {v['sim_failures']} gaps {v['n_rel_obj_gap_gt_1em3']}"
+              + (f" | init err med {v['init_rel_err_median']:.3f} p90 {v['init_rel_err_p90']:.3f}"
+                 if "init_rel_err_median" in v else ""))
     for k, v in out["paired"].items():
-        if k.endswith("| all"):
+        if k.endswith("| all") or "| mask" in k:
             print(f"{k:40s} median dCPU-s {v['median_cpu_s']:+.3f} CI [{v['ci95'][0]:+.3f}, {v['ci95'][1]:+.3f}] mean {v['mean_cpu_s']:+.3f}")
     print(json.dumps(out["break_even"], indent=1))
 

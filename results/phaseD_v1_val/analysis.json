@@ -48,7 +48,9 @@
       "cpu_s_p90": 22.97590776000001,
       "cpu_s_mean": 10.132586949333334,
       "sim_failures": 0,
-      "n_rel_obj_gap_gt_1em3": 113
+      "n_rel_obj_gap_gt_1em3": 113,
+      "init_rel_err_median": 0.27397393935695724,
+      "init_rel_err_p90": 1.1718612410876252
     },
     "mlp_s0+lsq": {
       "rel_err_median": 0.0024457925022577575,
@@ -60,7 +62,9 @@
       "cpu_s_p90": 14.1858444,
       "cpu_s_mean": 7.723973036000001,
       "sim_failures": 0,
-      "n_rel_obj_gap_gt_1em3": 103
+      "n_rel_obj_gap_gt_1em3": 103,
+      "init_rel_err_median": 0.0817707682774953,
+      "init_rel_err_p90": 0.3292149532105318
     }
   },
   "paired": {

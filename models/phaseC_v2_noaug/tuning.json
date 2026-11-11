@@ -1,0 +1,39 @@
+{
+  "trials": [
+    {
+      "lr": 0.001,
+      "alpha": 0.0001,
+      "val_mse_std": 0.9798987347221563,
+      "epochs": 31,
+      "train_seconds": 4.3575876001268625
+    },
+    {
+      "lr": 0.001,
+      "alpha": 0.001,
+      "val_mse_std": 0.9700670949127833,
+      "epochs": 31,
+      "train_seconds": 4.400766500039026
+    },
+    {
+      "lr": 0.003,
+      "alpha": 0.0001,
+      "val_mse_std": 0.7288973827159005,
+      "epochs": 74,
+      "train_seconds": 10.328773099929094
+    },
+    {
+      "lr": 0.003,
+      "alpha": 0.001,
+      "val_mse_std": 0.7849598830331243,
+      "epochs": 74,
+      "train_seconds": 10.601215900154784
+    }
+  ],
+  "selected": {
+    "lr": 0.003,
+    "alpha": 0.0001,
+    "val_mse_std": 0.7288973827159005,
+    "epochs": 74,
+    "train_seconds": 10.328773099929094
+  }
+}
