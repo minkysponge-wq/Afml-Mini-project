@@ -1,0 +1,102 @@
+{
+  "config": {
+    "config_version": "phaseF_tol_brent1e-2",
+    "dataset": "phaseB_v2",
+    "model_version": "phaseC_v2",
+    "mlp_seeds": [
+      0
+    ],
+    "mlp_seeds_note": "pilot uses seed 0 in the refined comparison; all 3 seeds reported neural-only",
+    "knn_grid": {
+      "k": [
+        1,
+        5,
+        10
+      ],
+      "ic_weight": [
+        0.5,
+        1.0,
+        2.0
+      ]
+    },
+    "brent": {
+      "xatol": 0.01,
+      "maxiter": 100
+    },
+    "lsq_refine": {
+      "xtol": 0.001,
+      "ftol": 1e-10,
+      "diff_step": 1e-06,
+      "max_nfev": 100
+    },
+    "grid_k": 5,
+    "tolerance_note": "T2 tolerance curve point: copy of phaseD_v1 with brent.xatol = 0.01. Validation only."
+  },
+  "split": "val",
+  "n_variants": 450,
+  "methods": [
+    "brent"
+  ],
+  "test_dir": null,
+  "ic_modes": [
+    1,
+    2,
+    3
+  ],
+  "knn_selected": {
+    "k": 10,
+    "ic_weight": 1.0,
+    "val_rmse_log": 0.4658867552320202
+  },
+  "knn_trials": [
+    {
+      "k": 1,
+      "ic_weight": 0.5,
+      "val_rmse_log": 0.5582853380859768
+    },
+    {
+      "k": 1,
+      "ic_weight": 1.0,
+      "val_rmse_log": 0.5712240826969511
+    },
+    {
+      "k": 1,
+      "ic_weight": 2.0,
+      "val_rmse_log": 0.5811374287262703
+    },
+    {
+      "k": 5,
+      "ic_weight": 0.5,
+      "val_rmse_log": 0.4769512274028239
+    },
+    {
+      "k": 5,
+      "ic_weight": 1.0,
+      "val_rmse_log": 0.47790276289558475
+    },
+    {
+      "k": 5,
+      "ic_weight": 2.0,
+      "val_rmse_log": 0.5084267633569536
+    },
+    {
+      "k": 10,
+      "ic_weight": 0.5,
+      "val_rmse_log": 0.4804857379986513
+    },
+    {
+      "k": 10,
+      "ic_weight": 1.0,
+      "val_rmse_log": 0.4658867552320202
+    },
+    {
+      "k": 10,
+      "ic_weight": 2.0,
+      "val_rmse_log": 0.49828842661788175
+    }
+  ],
+  "init_overhead": {},
+  "workers": 10,
+  "timing_note": "parallel workers: use solve counts; wall times indicative only",
+  "finished": "2026-11-11 17:50:16"
+}

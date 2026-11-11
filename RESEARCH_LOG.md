@@ -328,3 +328,26 @@ python -m blinit.experiments.tolerance_curves
 python -m blinit.experiments.train_mlp --config configs/phaseC_v2_noic.json && python -m blinit.experiments.ablations
 for s in highfreq finegrid unseenmask; do python -m blinit.experiments.evaluate --config configs/phaseD_v1_test.json --split test --test-dir data/phaseF_$s --workers 12; python -m blinit.experiments.analyze_d --dir results/phaseD_v1_3seeds_test_phaseF_$s; done
 ```
+
+### T5 — Ablations [RESULT] (2026-11-11, validation only, no new simulator calls)
+Commands: `python -m blinit.experiments.train_mlp --config configs/phaseC_v2_noaug.json`, `... phaseC_v2_noic.json`,
+`python -m blinit.experiments.ablations`. Outputs: `results/phaseF_ablations/ablations.{json,md}`, models
+`models/phaseC_v2_noaug/`, `models/phaseC_v2_noic/`. Same tuning protocol (4 configs, validation loss) and 3 seeds.
+Selected: noaug lr 3e-3, alpha 1e-4 (9,000 train variants); noic lr 1e-3, alpha 1e-3 (27,000).
+
+(a) MLP alone vs MLP + refinement (seed 0, 450 val variants): median relative error 8.2% (p90 33%) alone vs 0.245%
+(p90 2.9%) after refinement; median refinement cost 5.47 CPU-s. With noise-free data the refined error is ~1e-7 to
+1e-6. **The MLP alone is about 33 times less accurate than the data allow; refinement is necessary and the MLP's
+only job is to make it cheaper.**
+
+(b) Sensor-dropout augmentation (train on all 4/8/16-sensor variants) vs 16-sensor training only; neural-only
+median error, mean of 3 seeds [min, max]: all 9.9% [8.2, 11.6] vs 27.9% [25.9, 31.2]; 4 sensors 10-13% vs 55%
+[52, 59]; 8 sensors 9-11% vs 36% [32, 38]; 16 sensors 9-11% vs 8-11% (no difference).
+**Without the augmentation the network is no better than the midpoint guess (57%) at 4 sensors; with it, missing
+sensors cost little. At 16 sensors the augmentation neither helps nor hurts.**
+
+(c) Known IC coefficients as inputs vs hidden: all 9.9% [8.2, 11.6] vs 10.9% [10.1, 11.4]; 4 sensors 10.2-12.6% vs
+13.9-16.6% (ranges of the three noise levels' seed means); 8 and 16 sensors: no difference beyond seed spread.
+**The network uses the known starting state only when sensors are few; with 8 or 16 sensors the readings alone
+carry the same information. The proposal's claim that the IC inputs matter is supported at 4 sensors only.**
+Caveat: validation was also used for early stopping and tuning of every model compared here, equally for all.

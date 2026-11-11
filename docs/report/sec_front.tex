@@ -1,0 +1,141 @@
+% Sections I-V. Every number here is taken from a committed file; the source is named in a comment.
+
+\section{Introduction}
+Estimating a physical parameter from a few sensor readings usually means fitting a simulator to the data:
+an optimiser proposes a parameter value, the simulator is run, and the mismatch with the readings decides the
+next proposal. When each run is expensive, the number of runs is the cost. A common idea is to train a neural
+network on simulated examples so that it predicts the parameter directly, and to use that prediction as the
+starting point of the fit. The fit then keeps its accuracy and, one hopes, needs fewer runs.
+
+We test this idea on a deliberately small problem where every part can be checked: recovering the viscosity
+$\nu$ of the one-dimensional viscous Burgers equation from 4, 8 or 16 sensors read at four times, with a
+known initial state and 0\%, 1\% or 5\% noise. A two-layer perceptron predicts $\log\nu$; a bounded
+least-squares fit refines it. Our project proposal set a target: the learned start should halve the median
+online cost at no loss of accuracy. We state that as a hypothesis and test it.
+
+Three choices shape the study. First, the comparison includes a direct bounded scalar search (Brent's method),
+which needs no starting point at all, and a nearest-neighbour start; a learned start that only beats a poor
+cold start has shown little. Second, cost counts every simulator call, including those used for
+finite-difference derivatives, and the offline cost of the network (data generation, tuning, training) is
+divided by the saving per query to give a break-even number of queries. Third, the test-set evaluation was
+written down and committed before the test set was used, and it is reported whatever the outcome.
+
+The outcome is mostly negative. The learned start makes the least-squares fit cheaper than a midpoint start
+in every setting we ran. Against Brent's search, it is cheaper at one stopping tolerance and not at a tighter
+one, and the 2$\times$ target is not met. The remaining sections show why: the estimates already reach the
+Cram\'er--Rao bound, so accuracy cannot separate the methods, and a one-dimensional search needs so few
+simulator runs that little is left to save.
+
+\section{Related Work}
+\textbf{Learned warm starts.} Sambharya et al.~\cite{sambharya2024} train a network that maps the parameters
+of a convex problem to a warm start for a fixed-point solver, and compare it with a cold start and a
+nearest-neighbour warm start; they report iterations and solve times, and state training time separately
+without setting it against the savings. Zhou et al.~\cite{zhou2023} predict the shape of a scattering
+obstacle with a convolutional network and refine it by Gauss--Newton; their aim is to avoid local minima at
+high frequency, they report running time per obstacle, and training time is excluded from that comparison.
+Borisyak et al.~\cite{borisyak2023} predict the parameters of ODE growth models and optionally refine them by
+gradient-based fitting. Oh et al.~\cite{oh2026} warm-start Newton solvers for nonlinear PDEs with a neural
+operator and show that a low prediction error does not by itself give a usable start. Amos~\cite{amos2023}
+surveys this family as amortised optimisation; in his terms our method is semi-amortised and trained by
+regression.
+
+\textbf{Amortised and surrogate-based parameter estimation.} Simulation-based inference replaces the
+optimiser by a network trained on simulations~\cite{cranmer2020}; Tatsuoka et al.~\cite{tatsuoka2025} do so
+with two fidelity levels to limit expensive forward runs. Roy Sarkar et al.~\cite{roysarkar2024} identify PDE
+parameters from sparse, noisy data, Burgers among the examples, with a pretrained operator network in place
+of the simulator, and Long et al.~\cite{long2025} train a recurrent network together with a numerical scheme
+for each problem. We keep the simulator in the loop and learn only the starting point.
+
+\textbf{Sensors and identifiability.} Neitzel et al.~\cite{neitzel2019} choose sensor locations by the
+covariance of the least-squares estimator. We use the same Fisher-information view, not to place sensors but
+to check whether our estimates use all the information the given sensors carry.
+
+\textbf{Position of this work.} The mechanism is established; we do not claim it. What the two closest
+works~\cite{sambharya2024,zhou2023} leave open, and what we measure on one small problem, is the comparison
+against a direct scalar search, the break-even count once offline cost is included, and the dependence of the
+saving on the stopping tolerance.
+
+\section{Problem Setup}
+\subsection{Equation and simulator}
+We use the Burgers equation in the PDEBench convention~\cite{takamoto2022}, % configs/simulator_v1.json
+\begin{equation}
+u_t + \left(\tfrac{1}{2}u^2\right)_x = \frac{\nu}{\pi}\,u_{xx}, \qquad x\in[0,1)\ \text{periodic},
+\end{equation}
+with $\nu\in[0.01,0.1]$ and the initial state
+$u_0(x)=\sum_{k=1}^{3} a_k \sin(2\pi k x+\phi_k)$, $a_k\sim U(0,1)$, $\phi_k\sim U(0,2\pi)$. The amplitudes and
+phases are known to every method; only $\nu$ is unknown. The solver is our own NumPy implementation of the
+finite-volume scheme used by PDEBench (MUSCL reconstruction with its limiter, Rusanov flux, central
+diffusive flux, two-stage midpoint time stepping, CFL 0.25) on 256 cells in double precision. No PDEBench
+code is included.
+
+The solver passes eleven tests, % tests/test_simulator.py
+among them convergence to the exact Cole--Hopf solution, the small-amplitude heat limit with diffusivity
+$\nu/\pi$, mass conservation and periodic shift invariance. Its cost depends on $\nu$ because the explicit
+diffusion step limits the time step: one run to $t=1$ takes 1{,}686 steps at $\nu=0.01$ and 16{,}692 at
+$\nu=0.1$. % RESEARCH_LOG.md, "Cost observation"
+A method's cost therefore depends on which values of $\nu$ it tries, not only on how many.
+
+\subsection{Observations}
+Sixteen sensor slots sit at $x_s=(s+0.5)/16$ and are read at $t\in\{0.25,0.5,0.75,1\}$. A case uses 16, 8 or
+4 of them (every slot, every second, every fourth). Gaussian noise of standard deviation
+$\sigma=\ell\cdot\mathrm{RMS}$ is added, where $\ell\in\{0,0.01,0.05\}$ and RMS is taken over the clean
+$16\times4$ readings of that trajectory. % blinit/data.py make_observations
+Each trajectory thus gives nine cases (three sensor counts $\times$ three noise levels).
+
+\subsection{Data}
+No public dataset is used; all data are generated by the repository's solver from versioned configuration
+files and regenerate identically. % configs/phaseB_v2.json, data/phaseB_v2/integrity.json
+There are 3{,}000 training, 50 validation and 50 test trajectories (27{,}000 / 450 / 450 cases), with $\nu$
+drawn log-uniformly. Splits are made by the seed of the initial state, so all noise and sensor variants of a
+trajectory stay in one split. Nine automated checks run at build time, covering seed overlap between splits,
+normalisation statistics taken from training data only, and the mapping from readings to sensor positions.
+
+\section{Methods}
+All methods estimate $\theta=\log\nu$ within $[\log 0.01,\log 0.1]$ by minimising
+$J(\theta)=\tfrac12\lVert f(\theta)-y\rVert^2$ over the available readings, where $f$ is the simulator
+followed by interpolation to the sensors. They share one problem object that counts every simulator call.
+% blinit/inverse.py
+
+\textbf{Brent.} Bounded scalar minimisation of $J$ (SciPy \texttt{minimize\_scalar}, method
+\texttt{bounded}) with absolute tolerance \texttt{xatol} on $\theta$. It needs no starting point.
+
+\textbf{Start + LSQ.} A starting value $\theta_0$ followed by bounded least squares (SciPy
+\texttt{least\_squares}, trust-region reflective, two-point finite differences with relative step
+$10^{-6}$, tolerance \texttt{xtol}). Four starts are compared:
+\emph{midpoint} of the interval; \emph{grid}, the best of five log-spaced values (five extra simulator runs,
+counted); \emph{kNN}, the inverse-distance-weighted mean of the $k$ nearest training cases with the same
+sensor pattern; and \emph{MLP}.
+
+\textbf{MLP.} A perceptron with two hidden layers of 64 ReLU units (scikit-learn \texttt{MLPRegressor},
+Adam, batch size 64) maps 134 inputs to $\log\nu$: the 64 standardised readings with missing ones set to
+zero, 64 availability flags, and the six numbers $a_k\cos\phi_k$, $a_k\sin\phi_k$. % configs/phaseC_v2.json
+Training stops early on the validation loss. Four settings of learning rate and weight decay were tried and
+the one with the lowest validation loss kept; three seeds were then trained. % models/phaseC_v2/tuning.json
+kNN's $k$ and feature weight were chosen on validation as well. The test split was not loaded during any of
+this.
+
+\textbf{Cost.} The cost of a query is its number of solver steps times 144.3\,\textmu s, the median time per
+step measured in sequential runs. % RESEARCH_LOG.md, Phase A run 2
+We use steps rather than wall-clock time because experiments ran on parallel workers of a laptop whose
+timings were not clean. The offline cost of the MLP is the wall time of training-data generation multiplied
+by the number of workers (an upper bound), plus tuning and training. % blinit/experiments/analyze_d.py
+The break-even count is this offline cost divided by the mean saving per query against the cheapest
+classical method, with the MLP's inference time subtracted from the saving.
+
+\section{Evaluation Protocol}
+\textbf{Tolerances.} Stopping tolerances were fixed on development data: Brent \texttt{xatol} $10^{-3}$ and
+LSQ \texttt{xtol} $10^{-3}$ (primary). Because the LSQ rule can stop looser than Brent in the worst case, a
+second setting with LSQ \texttt{xtol} $10^{-4}$ (accuracy-matched) was added before testing.
+
+\textbf{Pre-registration.} Before the test split was used, a document committed to the
+repository % docs/preregistration_pilot_test.md
+fixed the models, the methods, both tolerance settings, the cost metric, the statistic (median paired
+difference in CPU-seconds between a learned method and Brent on the same case, with a 95\% bootstrap interval
+that resamples trajectories), and the rule for success: the saving counts as positive only if the interval
+excludes zero under both tolerance settings for at least two of the three MLP seeds. The 2$\times$ target is
+judged on the ratio of median costs. The test split was evaluated once per setting and nothing was changed
+afterwards. The robustness sets of Section~\ref{sec:robust} were pre-registered in the same way before they
+were generated. % docs/preregistration_phaseF.md
+
+\textbf{What validation was used for.} Early stopping, the choice among four MLP settings, the kNN settings,
+the tolerance curves of Section~\ref{sec:tol} and the ablations. Validation numbers are labelled as such.
