@@ -20,8 +20,8 @@ finite-difference derivatives, and the offline cost of the network (data generat
 divided by the saving per query to give a break-even number of queries. Third, the test-set evaluation was
 written down and committed before the test set was used, and it is reported whatever the outcome.
 
-The outcome is mostly negative. The learned start makes the least-squares fit cheaper than a midpoint start
-in every setting we ran. Against Brent's search, it is cheaper at one stopping tolerance and not at a tighter
+The outcome is mostly negative. On the test set the learned start makes the least-squares fit cheaper than a
+midpoint start at both tolerances. Against Brent's search, it is cheaper at one stopping tolerance and not at a tighter
 one, and the 2$\times$ target is not met. The remaining sections show why: the estimates already reach the
 Cram\'er--Rao bound, so accuracy cannot separate the methods, and a one-dimensional search needs so few
 simulator runs that little is left to save.

@@ -136,8 +136,9 @@ CPU-seconds, every interval below zero, break-even 1{,}567--2{,}606 queries.
 49--61\%, no better than guessing the midpoint (57\% on validation), and the saving against Brent is gone
 (median difference $+0.40$ to $+0.70$; intervals include zero). On the two patterns seen in training,
 evaluated on the same trajectories, the saving remains ($-0.91$ to $-1.17$, every interval below zero).
-kNN, which falls back to all-sensor neighbours and compares only the available readings, gives a better start
-on unseen patterns (22--31\%) but is still costlier than Brent.
+Even the gain over a midpoint start shrinks there, to a median of 0.41--0.70 CPU-seconds, with intervals that
+touch zero for some seeds. kNN, which falls back to all-sensor neighbours and compares only the available
+readings, gives a better start on unseen patterns (22--31\%) but is still costlier than Brent.
 
 The pattern is the one stated before the runs: when the inputs differ from training, the network's start
 gets worse and the least-squares fit absorbs it, at the price of the saving.
@@ -179,7 +180,8 @@ test set for the main claim (200 trajectories) was planned and not run.
 
 \section{Conclusion}
 A small network's guess makes a least-squares fit of Burgers viscosity cheaper than starting from the middle
-of the range, by about 2 CPU-seconds per query, in every setting we ran. It does not make the fit reliably
+of the range, by about 2 CPU-seconds per query on the test set; on sensor patterns not seen in training that
+gain shrinks to about 0.5 and is not always distinguishable from zero. It does not make the fit reliably
 cheaper than Brent's bounded search, which needs no guess: at equal typical precision it saves about
 1.2$\times$, at equal worst-case precision about nothing, and the pre-registered test was not positive. Where
 it does save, it pays back its offline cost after roughly 1{,}600--4{,}500 queries. The saving vanishes when
