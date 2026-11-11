@@ -1,0 +1,11 @@
+{
+  "config_version": "followup_bracket_w0.5_3seeds",
+  "dataset": "phaseB_v2",
+  "model_version": "phaseC_v2",
+  "mlp_seeds": [0, 1, 2],
+  "widths": [0.5],
+  "widths_note": "w = 0.5 selected on VALIDATION (results/followup_bracket_val/analysis.json) by lowest mean CPU-s from {0.1, 0.2, 0.3, 0.5}; 0.5 is the edge of the grid (limitation, not re-tuned).",
+  "brent": {"xatol": 0.001, "maxiter": 100},
+  "brent_note": "same stopping rule as the Brent baseline, so precision is matched by construction",
+  "fallback": "estimate within 2*xatol of an interior bracket edge -> Brent re-run on full bounds (counted)"
+}
