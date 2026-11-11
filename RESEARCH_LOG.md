@@ -238,3 +238,50 @@ Both pre-registered runs finished on Sampreeth's laptop (resumed with checkpoint
 `results/phaseD_v1_3seeds_test/` and `results/phaseD_v1_tightlsq_3seeds_test/`, each 450 variants x 7 methods
 = 3,150 rows. Only completion markers and row counts were checked; no test metric has been computed, printed or
 viewed. Analysis and the go/no-go verdict are handover task T1 (see `docs/preregistration_pilot_test.md`).
+
+### T1 — Pilot TEST analysis and go/no-go [RESULT] (2026-11-11)
+Commands: `python -m blinit.experiments.analyze_d --dir results/phaseD_v1_3seeds_test` and
+`... --dir results/phaseD_v1_tightlsq_3seeds_test`. No model, tolerance or code was changed. 450 test variants
+(50 trajectories x 3 sensor counts x 3 noise levels), 7 methods, 0 simulator failures in both runs.
+
+Accuracy is the same for every method in both runs: median relative error 2.2e-3, p90 2.6e-2.
+
+| setting | method | CPU-s mean / median / p90 | solves median / mean |
+|---|---|---|---|
+| primary (lsq xtol 1e-3) | brent | 9.01 / 8.12 / 14.72 | 9 / 9.20 |
+| | midpoint+lsq | 11.06 / 7.37 / 22.05 | 10 / 11.25 |
+| | grid5+lsq | 12.79 / 11.75 / 20.77 | 12 / 11.98 |
+| | knn+lsq | 9.27 / 7.65 / 15.61 | 8 / 9.31 |
+| | mlp_s0 / s1 / s2 +lsq | 8.20 / 6.75 / 15.02; 8.16 / 6.65 / 14.35; 8.52 / 7.21 / 15.05 | 8 / 8.08; 8 / 8.11; 8 / 8.39 |
+| matched (lsq xtol 1e-4) | brent | 9.01 / 8.12 / 14.72 | 9 / 9.20 |
+| | midpoint+lsq | 12.37 / 9.32 / 22.20 | 12 / 12.58 |
+| | grid5+lsq | 13.88 / 13.32 / 23.67 | 13 / 12.96 |
+| | knn+lsq | 10.53 / 8.76 / 17.62 | 10 / 10.58 |
+| | mlp_s0 / s1 / s2 +lsq | 9.30 / 8.06 / 15.72; 9.22 / 7.77 / 15.62; 9.57 / 7.77 / 17.28 | 8 / 9.18; 8 / 9.20; 8 / 9.43 |
+
+Paired median difference in CPU-s per query, MLP - brent, all 450 variants (95% trajectory bootstrap CI):
+
+| seed | primary | matched |
+|---|---|---|
+| 0 | -1.073 [-1.396, -0.834] (mean -0.808) | -0.118 [-0.547, +0.267] (mean +0.288) |
+| 1 | -0.947 [-1.348, -0.626] (mean -0.853) | -0.098 [-0.417, +0.334] (mean +0.208) |
+| 2 | -0.795 [-1.177, -0.423] (mean -0.489) | -0.033 [-0.322, +0.236] (mean +0.564) |
+
+Per sensor/noise cell: primary, the CI is below 0 in 9/9 (seed 0), 8/9 (seed 1), 8/9 (seed 2) cells; matched, the CI
+includes 0 in all 9 cells for all 3 seeds.
+MLP - midpoint+lsq: -1.87 to -1.97 (primary) and -2.06 to -2.48 (matched), every CI below 0.
+kNN - brent: -0.203 [-0.771, +0.621] (primary); +0.942 [+0.439, +1.652] (matched, kNN costs more).
+Median CPU ratio brent / MLP: 1.20, 1.22, 1.13 (primary); 1.01, 1.05, 1.05 (matched). Mean ratio: 1.06-1.10 (primary);
+0.94-0.98 (matched).
+Break-even vs brent: 2,790 / 2,625 / 4,455 queries (primary, seeds 0/1/2); no finite break-even at the matched
+tolerance (mean saving <= 0 for all seeds). kNN: no finite break-even in either setting.
+
+**Verdict under the pre-registered rule: NOT positive.** The rule needs the CI to exclude 0 under both tolerance
+settings for at least 2 of 3 seeds; it does so under the primary setting for 3/3 seeds and under the matched setting
+for 0/3. **The 2x target is not met** (largest median ratio 1.22).
+**Go/no-go: go to Phase F with the main finding stated as:** the learned initialiser makes the least-squares
+refinement cheaper than a midpoint start in every setting, but it is not cheaper than Brent's bounded search once
+the refinement is run to equal-or-better precision. Phase F explains this (T2 tolerance curves, T3 Cramér–Rao bound)
+and tests whether it holds under shift (T4), with ablations (T5).
+Caveats: 50 test trajectories; neither tolerance pair is exactly precision-matched (T2 addresses this); cost is solver
+steps x 144.3 us, not wall time.
