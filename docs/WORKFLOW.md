@@ -1,6 +1,6 @@
 # Project workflow: status and phase plan
 
-*Last updated 2026-11-09 (evening). Handed over to the teammate; see the handover doc and `RESEARCH_LOG.md`. Plain-language explainer: `docs/How_Our_Project_Works.pdf`. Each phase lists tasks, outputs and an **exit gate**: a concrete check
+*Last updated 2026-11-11. Handed over to the teammate; see the handover doc and `RESEARCH_LOG.md`. Plain-language explainer: `docs/How_Our_Project_Works.pdf`. Each phase lists tasks, outputs and an **exit gate**: a concrete check
 that must pass before the next phase starts. "Verified" means the result exists on disk and was
 checked; anything else is a plan.*
 
@@ -16,15 +16,17 @@ checked; anything else is a plan.*
 | Phase A pilot (20 problems, 16 sensors, noise-free) | Done, verified | `results/phaseA/` |
 | Grid convergence at sensors | Done, verified | `results/phaseA/meta.json`, figure |
 | Accuracy-vs-cost curves | Done, verified | `results/phaseA/figures/accuracy_vs_solves.png` |
-| Starting-point quality sweep (how good must an init be?) | **Re-running** (first attempt killed at 10/20) | `blinit/experiments/init_sweep.py` |
-| Literature audit | First pass only (6 verified sources) | `docs/literature_audit.md` |
 | Phase A′ noise / 4–8 sensors + starting-point sweep | Done, verified | `results/phaseA_noise/`, `results/phaseA/init_sweep.csv` |
 | Phase B dataset (v2: 3000/50/50, 9 integrity checks pass) | Done, verified | `data/phaseB_v2/integrity.json` |
 | Phase C MLP (3 seeds; val median error 8–12%) | Done, verified | `models/phaseC_v2/` |
 | Phase D comparison on validation | Done, verified (MLP vs Brent: −1.49 CPU-s/query, CI [−1.84, −1.16]; 1.17–1.35×) | `results/phaseD_v1_val/` |
 | Accuracy-matched validation check | Done, verified (MLP vs Brent: −0.65 CPU-s median, ≈0 mean) | `results/phaseD_v1_tightlsq_val/` |
-| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Runs complete, **not yet analyzed** (handover task T1) | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
-| Go/no-go (E), scale (F), report (G), submission (H) | Not started | — |
+| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Done: **not positive** under the pre-registered rule; 2× not met (T1) | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
+| Go/no-go (E) | Done (T1, `RESEARCH_LOG.md`) | log |
+| Phase F: tolerance curves (T2), Cramér–Rao bound (T3), robustness sets (T4), ablations (T5) | Done, verified | `results/phaseF_*`, `results/phaseD_v1_3seeds_test_phaseF_*` |
+| Literature audit part 2 (T7) | Done (11 sources opened) | `docs/literature_audit.md` |
+| Larger test set (T6, optional) | Not run (skipped: compute/time) | — |
+| Report (G) and slides (H) | Done: IEEE draft, filled slide template; video by teammates | `docs/report/`, `docs/slides/` |
 
 ### Verified Phase A findings
 - **Recovery:** every method recovers ν on all 20 noise-free problems (worst relative error 1.2e-5), with no failures.
