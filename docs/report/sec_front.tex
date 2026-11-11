@@ -22,7 +22,8 @@ written down and committed before the test set was used, and it is reported what
 
 The outcome is mostly negative. On the test set the learned start makes the least-squares fit cheaper than a
 midpoint start at both tolerances. Against Brent's search, it is cheaper at one stopping tolerance and not at a tighter
-one, and the 2$\times$ target is not met. The remaining sections show why: the estimates already reach the
+one, and the 2$\times$ target is not met. A follow-up that hands the guess to Brent as a search bracket saves
+8--10\%, a small gain found after the main test. The remaining sections show why: the estimates already reach the
 Cram\'er--Rao bound, so accuracy cannot separate the methods, and a one-dimensional search needs so few
 simulator runs that little is left to save.
 
@@ -113,6 +114,10 @@ Training stops early on the validation loss. Four settings of learning rate and 
 the one with the lowest validation loss kept; three seeds were then trained. % models/phaseC_v2/tuning.json
 kNN's $k$ and feature weight were chosen on validation as well. The test split was not loaded during any of
 this.
+
+\textbf{Learned bracket (follow-up).} Brent's search restricted to $\hat\theta_{\mathrm{MLP}}\pm w$, with a
+counted fallback to the full interval when the estimate hits an interior bracket edge
+(Section~\ref{sec:bracket}). % blinit/inverse.py brent_bracket
 
 \textbf{Cost.} The cost of a query is its number of solver steps times 144.3\,\textmu s, the median time per
 step measured in sequential runs. % RESEARCH_LOG.md, Phase A run 2

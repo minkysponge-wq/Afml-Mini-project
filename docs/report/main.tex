@@ -40,7 +40,9 @@ evaluation. All methods reach the same accuracy, which matches the Cram\'er--Rao
 learned start saves about 2 CPU-seconds per query against a midpoint start. Against Brent's search it
 saves 0.8--1.1 CPU-seconds at one stopping tolerance and nothing measurable at a tighter one, so the
 pre-registered criterion is not met; matched on typical precision the gain is about 1.2$\times$, against a
-2$\times$ target. The saving disappears for starting states and sensor patterns not seen in training.
+2$\times$ target. Using the guess as a search bracket for Brent instead saves 8--10\% at Brent's own precision,
+a follow-up designed after the main test. The saving of the least-squares route disappears for starting states
+and sensor patterns not seen in training.
 \end{abstract}
 
 \begin{IEEEkeywords}

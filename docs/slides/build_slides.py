@@ -163,6 +163,7 @@ def main():
         "Learned start vs midpoint start: about 2 CPU-s saved per query on the pilot test",
         "Learned start vs Brent: 0.8–1.1 CPU-s saved at the loose tolerance, ~0 at the tight one",
         "Pre-registered test: not positive; 2x target not met (1.2x at matched typical precision)",
+        "Follow-up (after the test): MLP guess as a bracket for Brent saves 8–10%",
         "Break-even 2,600–4,500 queries; saving gone for unseen starting states / sensor patterns",
     ], size=14)
     shape(s, "Content Placeholder 2").width = Inches(5.5)
@@ -194,7 +195,7 @@ def main():
         ("6", "Bootstrap analysis + break-even", "100", "Y", "—"),
         ("7", "Tolerance curves / Cramér–Rao bound", "100", "Y", "—"),
         ("8", "Robustness sets + ablations", "100", "Y", "fine-grid build is slowest"),
-        ("9", "Test suite (pytest)", "100", "Y", "26 tests pass"),
+        ("9", "Test suite (pytest)", "100", "Y", "29 tests pass"),
     ], size=11)
 
     # 9 Learning points

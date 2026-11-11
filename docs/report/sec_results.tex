@@ -95,6 +95,24 @@ worst case. Source: \texttt{results/phaseF\_tolerance}.}
 \label{fig:tol}
 \end{figure}
 
+\subsection{Follow-up: Brent inside a learned bracket}\label{sec:bracket}
+% results/followup_bracket_val/analysis.json, results/followup_bracket_w0.5_3seeds_test/analysis.json;
+% docs/preregistration_followup_bracket.md; RESEARCH_LOG.md Session 3
+If least squares loses its advantage in the worst case, the learned guess can be given to Brent instead: Brent
+searches $[\hat\theta_{\mathrm{MLP}}-w,\ \hat\theta_{\mathrm{MLP}}+w]$ with its own tolerance, so precision is
+matched by construction, and if the estimate lands on an interior edge of the bracket, Brent is rerun on the
+full interval with all runs counted. The half-width $w=0.5$ (in $\log\nu$) was chosen on validation from
+$\{0.1,0.2,0.3,0.5\}$; it is the edge of that grid. This variant was designed after the main test result was
+known and was then evaluated on the same 450 test cases under its own pre-registration, so it is weaker
+evidence than the main test.
+
+On test it falls back to the full interval in 1.6--2.7\% of cases, matches Brent's accuracy (its estimates
+differ from Brent's by at most $3.3\times10^{-4}$ relative), and is cheaper than plain Brent for all three
+seeds: median paired difference $-0.96$ to $-1.11$ CPU-seconds, every interval below zero, mean difference
+$-0.69$ to $-0.92$ (an 8--10\% mean saving). The ratio of median costs is 1.04--1.11, and break-even comes
+after about 2{,}400--3{,}300 queries. This is the one setting where a learned guess gave a saving over
+Brent at matched precision; it is small, and it needs confirmation on fresh trajectories.
+
 \subsection{The estimates reach the Cram\'er--Rao bound}
 % results/phaseF_crb/table_test.json, table_val.json
 For readings $y=f(\theta)+\varepsilon$ with Gaussian noise of standard deviation $\sigma$, the Fisher
@@ -175,7 +193,9 @@ start may matter more. Cost is counted in solver steps times a fixed time per st
 laptop, because parallel wall-clock times were not clean; network inference time is included but is
 negligible. Test sets have 50 trajectories each, so intervals are wide. The offline cost uses generation wall
 time multiplied by worker count, an upper bound. Validation data were used both for early stopping and for
-the tolerance curves and ablations, which favours the learned method in those analyses. An optional larger
+the tolerance curves and ablations, which favours the learned method in those analyses. The learned-bracket
+follow-up (Section~\ref{sec:bracket}) was designed after the main test result and reuses the same test cases;
+it was not run on the robustness sets. An optional larger
 test set for the main claim (200 trajectories) was planned and not run.
 
 \section{Conclusion}
@@ -183,7 +203,9 @@ A small network's guess makes a least-squares fit of Burgers viscosity cheaper t
 of the range, by about 2 CPU-seconds per query on the test set; on sensor patterns not seen in training that
 gain shrinks to about 0.5 and is not always distinguishable from zero. It does not make the fit reliably
 cheaper than Brent's bounded search, which needs no guess: at equal typical precision it saves about
-1.2$\times$, at equal worst-case precision about nothing, and the pre-registered test was not positive. Where
+1.2$\times$, at equal worst-case precision about nothing, and the pre-registered test was not positive.
+Handing the guess to Brent as a search bracket instead does save 8--10\% at Brent's own precision, a small
+gain found after the main test and not yet confirmed on fresh data. Where
 it does save, it pays back its offline cost after roughly 1{,}600--4{,}500 queries. The saving vanishes when
 the starting states or sensor patterns differ from training. Since both methods already reach the
 Cram\'er--Rao bound, the only room left is cost, and on a single-minimum scalar problem a direct search
