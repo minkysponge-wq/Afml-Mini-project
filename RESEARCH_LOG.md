@@ -238,3 +238,51 @@ Both pre-registered runs finished on Sampreeth's laptop (resumed with checkpoint
 `results/phaseD_v1_3seeds_test/` and `results/phaseD_v1_tightlsq_3seeds_test/`, each 450 variants x 7 methods
 = 3,150 rows. Only completion markers and row counts were checked; no test metric has been computed, printed or
 viewed. Analysis and the go/no-go verdict are handover task T1 (see `docs/preregistration_pilot_test.md`).
+
+## 2026-11-11 — Session 3: pilot TEST analysis (handover task T1)
+
+### Pre-registered analysis [RUN] [RESULT]
+Commands (analysis code unchanged since the pre-registration commit a9de91a):
+```
+python -m blinit.experiments.analyze_d --dir results/phaseD_v1_3seeds_test
+python -m blinit.experiments.analyze_d --dir results/phaseD_v1_tightlsq_3seeds_test
+```
+Both runs complete: 450 variants x 7 methods = 3,150 rows each; configs match `docs/preregistration_pilot_test.md`.
+kNN selected on validation: k=10, IC weight 1.0. 0 simulator failures for every method in both settings.
+Outputs: `analysis.json` and `cost_accuracy_by_condition.png` in each results folder. The success rule, the per-cell table
+and the nu-deviation figures below come from a separate read-only reporting script that does no re-optimisation
+(it reads `analysis.json` and `runs.csv`).
+
+**Accuracy (both settings).** Median relative error vs true nu is 2.2e-3 and p90 is 2.6e-2 for every method (information-limited,
+as on validation). Deviation of nu from the best-found optimum: Brent median 6e-5, max 6.3e-4; LSQ methods max 1.1e-3–3.4e-3
+at xtol 1e-3 and max <= 2.8e-4 at xtol 1e-4. Objective-gap flags (relative gap > 1e-3) occur almost only in noise-free
+variants, where the optimum is ~0 and the relative gap is meaningless (at most 2 flags per method at 1% noise, none at 5%).
+
+**Cost, primary setting (brent xatol 1e-3, lsq xtol 1e-3).** CPU-s mean / median: brent 9.01 / 8.12; mlp_s0 8.20 / 6.75;
+mlp_s1 8.16 / 6.65; mlp_s2 8.52 / 7.21; knn 9.27 / 7.65; midpoint 11.06 / 7.37; grid5 12.79 / 11.75.
+Paired mlp - brent, median dCPU-s [95% CI]: s0 -1.07 [-1.40, -0.83]; s1 -0.95 [-1.35, -0.63]; s2 -0.80 [-1.18, -0.42].
+Saving in 25 of 27 seed x cell combinations (CI excludes 0); the exceptions are s1 at s4n5% and s2 at s8n5%.
+Median CPU ratio brent/MLP: 1.20 / 1.22 / 1.13. Break-even vs brent: about 2,790 / 2,630 / 4,450 queries.
+
+**Cost, accuracy-matched setting (brent xatol 1e-3, lsq xtol 1e-4).** CPU-s mean / median: brent 9.01 / 8.12; mlp_s0 9.30 / 8.06;
+mlp_s1 9.22 / 7.77; mlp_s2 9.57 / 7.77; knn 10.53 / 8.76; midpoint 12.37 / 9.32; grid5 13.88 / 13.32.
+Paired mlp - brent: s0 -0.12 [-0.55, +0.27]; s1 -0.10 [-0.42, +0.33]; s2 -0.03 [-0.32, +0.24]. The CI includes 0 in all 27
+seed x cell combinations. The mean saving is negative for every seed (MLP costlier on average), so there is **no finite break-even**.
+Median CPU ratio: 1.01 / 1.05 / 1.05.
+
+**Secondary comparisons.** MLP vs midpoint+lsq: a saving under both settings for all seeds (median -1.9 to -2.5 CPU-s, all CIs
+exclude 0), so the learned start clearly helps the LSQ refiner itself. kNN vs brent: no saving (primary -0.20 [-0.77, +0.62];
+tight +0.94 [+0.44, +1.65]); no finite break-even in either setting.
+
+### Pre-registered verdict [RESULT]
+- **Positive saving vs Brent: NOT established.** The rule requires the CI to exclude 0 under both tolerance settings for >= 2 of
+  3 seeds. Primary: 3/3 seeds pass. Accuracy-matched: 0/3. Both: **0/3**.
+- **2x target: NOT met** (median CPU ratio 1.13–1.22 primary, 1.01–1.05 accuracy-matched).
+- The test numbers reproduce the validation pattern: the saving vs Brent depends on the LSQ stopping tolerance and vanishes
+  when LSQ is at least as precise as Brent.
+
+**Implication for Phase E (team decision, not taken here).** On the pre-registered criterion this is a no-go for the claim
+"learned initialisation beats direct Brent search". Defensible reported findings: (1) the learned start reliably cuts the cost of
+the LSQ refiner by about 2 CPU-s per query vs midpoint; (2) relative to Brent the saving is at most ~1.2x and depends on the
+tolerance; (3) kNN gives no saving. Narrow follow-ups allowed by WORKFLOW Phase E (each needs approval): Brent inside a learned
+bracket, or harder regimes.

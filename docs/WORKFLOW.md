@@ -23,7 +23,7 @@ checked; anything else is a plan.*
 | Phase C MLP (3 seeds; val median error 8–12%) | Done, verified | `models/phaseC_v2/` |
 | Phase D comparison on validation | Done, verified (MLP vs Brent: −1.49 CPU-s/query, CI [−1.84, −1.16]; 1.17–1.35×) | `results/phaseD_v1_val/` |
 | Accuracy-matched validation check | Done, verified (MLP vs Brent: −0.65 CPU-s median, ≈0 mean) | `results/phaseD_v1_tightlsq_val/` |
-| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Runs complete, **not yet analyzed** (handover task T1) | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
+| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Analyzed 2026-11-11: positive saving vs Brent **not** established (0/3 seeds pass both settings); 2× not met | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
 | Go/no-go (E), scale (F), report (G), submission (H) | Not started | — |
 
 ### Verified Phase A findings
