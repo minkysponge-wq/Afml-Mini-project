@@ -2,6 +2,8 @@
 
 Usage: python -m blinit.experiments.train_mlp [--config configs/phaseC_v1.json]
 Outputs: models/<config_version>/{tuning.json, seed<k>/model.pkl, seed<k>/curve.csv, summary.json, figures}
+Optional config keys (T5 ablations): "train_filter" (e.g. {"n_sensors": [16]}: train on matching variants only)
+and "zero_ic_features" (true: the 6 IC input columns are set to 0 for train and validation).
 The test split is not loaded here.
 """
 from __future__ import annotations
@@ -32,6 +34,23 @@ def load_split(dset_dir, split):
     return T, O
 
 
+def filter_variants(O, flt):
+    """Keep observation variants whose fields match flt, e.g. {"n_sensors": [16]}. None = keep all."""
+    if not flt:
+        return O
+    sel = np.ones(len(O["parent"]), bool)
+    for key, allowed in flt.items():
+        sel &= np.isin(O[key], allowed)
+    return {k: (v[sel] if isinstance(v, np.ndarray) and v.shape[:1] == sel.shape else v) for k, v in O.items()}
+
+
+def zero_ic(X, n_ic=6):
+    """Copy of the feature matrix with the last n_ic columns (IC features) set to 0."""
+    X = X.copy()
+    X[:, -n_ic:] = 0.0
+    return X
+
+
 def error_table(theta_hat, theta_true, O):
     rel = np.abs(np.exp(theta_hat) - np.exp(theta_true)) / np.exp(theta_true)
     tab = {"all": dict(median=float(np.median(rel)), p90=float(np.percentile(rel, 90)))}
@@ -56,8 +75,11 @@ def main():
     assert norm["fitted_on"] == "train"
     Ttr, Otr = load_split(dset, "train")
     Tva, Ova = load_split(dset, "val")
+    Otr = filter_variants(Otr, cfg.get("train_filter"))      # ablation: train on a subset; validation stays complete
     Xtr, ytr = features(Otr, Ttr, norm)
     Xva, yva = features(Ova, Tva, norm)
+    if cfg.get("zero_ic_features"):                          # ablation: hide the known IC coefficients
+        Xtr, Xva = zero_ic(Xtr), zero_ic(Xva)
     mc = cfg["model"]
     kw = dict(hidden=tuple(mc["hidden_layer_sizes"]), batch_size=mc["batch_size"],
               max_epochs=cfg["max_epochs"], patience=cfg["patience"])

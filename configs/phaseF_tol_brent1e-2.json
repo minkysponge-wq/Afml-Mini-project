@@ -1,0 +1,33 @@
+{
+  "config_version": "phaseF_tol_brent1e-2",
+  "dataset": "phaseB_v2",
+  "model_version": "phaseC_v2",
+  "mlp_seeds": [
+    0
+  ],
+  "mlp_seeds_note": "pilot uses seed 0 in the refined comparison; all 3 seeds reported neural-only",
+  "knn_grid": {
+    "k": [
+      1,
+      5,
+      10
+    ],
+    "ic_weight": [
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "brent": {
+    "xatol": 0.01,
+    "maxiter": 100
+  },
+  "lsq_refine": {
+    "xtol": 0.001,
+    "ftol": 1e-10,
+    "diff_step": 1e-06,
+    "max_nfev": 100
+  },
+  "grid_k": 5,
+  "tolerance_note": "T2 tolerance curve point: copy of phaseD_v1 with brent.xatol = 0.01. Validation only."
+}

@@ -33,9 +33,10 @@ class Problem:
     n_requests: int = 0
     _cache: dict = field(default_factory=dict)
     trace: list = field(default_factory=list)  # (theta, objective, cumulative solver steps) per actual solve
+    modes: tuple = (1, 2, 3)     # sine modes of the (known) initial condition
 
     def __post_init__(self):
-        self._u0 = initial_condition(self.sim.xc, self.amps, self.phases, length=self.sim.length)
+        self._u0 = initial_condition(self.sim.xc, self.amps, self.phases, modes=self.modes, length=self.sim.length)
         self._xs = self.obs.sensor_x[self.mask]
 
     def residual(self, theta):

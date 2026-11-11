@@ -34,23 +34,29 @@ def sample_trajectory_params(base_seed, ic_seed):
 
 
 def _simulate(args):
-    nu, amps, phases = args
-    sim, obs = SimConfig.from_json(), ObsConfig.from_json()
-    traj = solve(initial_condition(sim.xc, amps, phases, length=sim.length), nu, obs.times, sim)
+    nu, amps, phases = args[:3]
+    modes = args[3] if len(args) > 3 else (1, 2, 3)
+    nx = args[4] if len(args) > 4 else None
+    sim = SimConfig.from_json() if nx is None else SimConfig.from_json(nx=int(nx))
+    obs = ObsConfig.from_json()
+    traj = solve(initial_condition(sim.xc, amps, phases, modes=modes, length=sim.length), nu, obs.times, sim)
     return traj, interp_periodic(traj, obs.sensor_x, sim)
 
 
-def generate_trajectories(cfg, split, workers=8):
+def generate_trajectories(cfg, split, workers=8, modes=(1, 2, 3), nx=None):
+    """modes: sine modes of the IC; nx: grid cells used to simulate the data (None = the simulator config)."""
     n, off = cfg["splits"][split], cfg["ic_seed_offset"][split]
     ic_seeds = off + np.arange(n)
-    params = [sample_trajectory_params(cfg["base_seed"], int(s)) for s in ic_seeds]
+    modes = tuple(int(m) for m in modes)
+    params = [sample_trajectory_params(cfg["base_seed"], int(s)) + (modes, nx) for s in ic_seeds]
     with ProcessPoolExecutor(max_workers=workers) as ex:
         res = list(ex.map(_simulate, params, chunksize=4))
     obs = ObsConfig.from_json()
     return dict(split=split, ic_seed=ic_seeds, nu=np.array([p[0] for p in params]),
                 amps=np.array([p[1] for p in params]), phases=np.array([p[2] for p in params]),
                 u_at_obs_times=np.array([r[0] for r in res]), y_clean=np.array([r[1] for r in res]),
-                sensor_x=obs.sensor_x, times=np.array(obs.times),
+                sensor_x=obs.sensor_x, times=np.array(obs.times), modes=np.array(modes),
+                sim_nx=np.array(SimConfig.from_json().nx if nx is None else int(nx)),
                 sim_config=(CONFIG_DIR / "simulator_v1.json").read_text(), solver_version=git_version())
 
 
@@ -72,6 +78,37 @@ def make_observations(T, cfg, levels=None, sensors=None):
                 y.append(np.where(m[None, :], yn, np.nan))      # unavailable readings are NaN in raw storage
     return dict(parent=np.array(parent), y=np.array(y), mask=np.array(mask), noise=np.array(noise),
                 n_sensors=np.array(nsens), split=T["split"])
+
+
+def named_masks(spec, n_slots=16):
+    """Sensor masks from a versioned config spec: {name: {"on": [slot indices]}} -> [(name, bool mask)]."""
+    out = []
+    for name, d in spec.items():
+        m = np.zeros(n_slots, bool)
+        m[np.asarray(d["on"], int)] = True
+        out.append((name, m))
+    return out
+
+
+def make_observations_masks(T, cfg, masks, levels=None):
+    """Like make_observations, but for a list of (name, mask) pairs instead of nested sensor counts.
+
+    The noise draw per (trajectory, level) is the same as in make_observations and is shared by all masks.
+    """
+    levels = cfg["observation_variants"]["noise_levels"] if levels is None else levels
+    parent, y, mask, noise, nsens, names = [], [], [], [], [], []
+    for j in range(len(T["nu"])):
+        yc = T["y_clean"][j]
+        rms = np.sqrt(np.mean(yc ** 2))
+        for li, lv in enumerate(levels):
+            rng = np.random.default_rng(np.random.SeedSequence([cfg["base_seed"], int(T["ic_seed"][j]), 99, li]))
+            yn = yc + lv * rms * rng.standard_normal(yc.shape)
+            for name, m in masks:
+                m = np.asarray(m, bool)
+                parent.append(j); mask.append(m); noise.append(lv); nsens.append(int(m.sum())); names.append(name)
+                y.append(np.where(m[None, :], yn, np.nan))
+    return dict(parent=np.array(parent), y=np.array(y), mask=np.array(mask), noise=np.array(noise),
+                n_sensors=np.array(nsens), mask_name=np.array(names), split=T["split"])
 
 
 def fit_normaliser(O_train):
@@ -119,7 +156,7 @@ def integrity_report(Ts, Os, norm):
 def params_reproducible(T, base_seed, k=5):
     """Trajectory parameters regenerate exactly from (base_seed, ic_seed)."""
     for j in range(min(k, len(T["nu"]))):
-        nu, a, ph = sample_trajectory_params(base_seed, int(T["ic_seed"][j]))
+        nu, a, ph = sample_trajectory_params(base_seed, int(T["ic_seed"][j]))[:3]
         if not (nu == T["nu"][j] and np.array_equal(a, T["amps"][j]) and np.array_equal(ph, T["phases"][j])):
             return False
     return True

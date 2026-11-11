@@ -3,6 +3,7 @@
 Usage:
   python -m blinit.experiments.evaluate --split val  [--workers 12] [--limit N]   # development
   python -m blinit.experiments.evaluate --split test [--workers 12]              # final pilot report (run once)
+  ... --methods brent,mlp        # run only some method groups (brent, midpoint, grid, knn, mlp); default all
 
 All methods see the same observation variant, same simulator, bounds and refinement settings.
 Ground truth is used only to score. Parallel workers: solve counts/errors valid; wall times are
@@ -40,15 +41,35 @@ def tune_knn(cfg, Xtr, ytr, Xva, yva):
     return min(trials, key=lambda t: t["val_rmse_log"]), trials
 
 
+METHOD_GROUPS = ("brent", "midpoint", "grid", "knn", "mlp")
+
+
+def parse_methods(text):
+    """Comma list from METHOD_GROUPS -> tuple in canonical order. None/'' = all."""
+    if not text:
+        return METHOD_GROUPS
+    sel = [m.strip() for m in text.split(",") if m.strip()]
+    bad = [m for m in sel if m not in METHOD_GROUPS]
+    if bad:
+        raise ValueError(f"unknown method group(s) {bad}; choose from {METHOD_GROUPS}")
+    return tuple(m for m in METHOD_GROUPS if m in sel)
+
+
 def run_variant(args):
-    v, amps, phases, y, mask, nu_true, inits, cfg = args
+    v, amps, phases, y, mask, nu_true, inits, cfg = args[:8]
+    methods = args[8] if len(args) > 8 else METHOD_GROUPS
+    modes = tuple(args[9]) if len(args) > 9 else (1, 2, 3)
     sim, obs = SimConfig.from_json(), ObsConfig.from_json()
     y_full = np.where(np.isnan(y), 0.0, y)      # values outside the mask are never read
-    mk = lambda: Problem(amps, phases, y_full, mask, sim, obs)
-    rows = [run_method("brent", mk, brent_kw=cfg["brent"]),
-            run_method("midpoint+lsq", mk, refine_kw=cfg["lsq_refine"]),
-            run_method(f"grid{cfg['grid_k']}+lsq", mk, refine_kw=cfg["lsq_refine"], grid_k=cfg["grid_k"])]
-    for name, th0 in inits.items():
+    mk = lambda: Problem(amps, phases, y_full, mask, sim, obs, modes=modes)   # inversion always on the config grid
+    rows = []
+    if "brent" in methods:
+        rows.append(run_method("brent", mk, brent_kw=cfg["brent"]))
+    if "midpoint" in methods:
+        rows.append(run_method("midpoint+lsq", mk, refine_kw=cfg["lsq_refine"]))
+    if "grid" in methods:
+        rows.append(run_method(f"grid{cfg['grid_k']}+lsq", mk, refine_kw=cfg["lsq_refine"], grid_k=cfg["grid_k"]))
+    for name, th0 in inits.items():       # inits already holds only the selected learned initialisers
         rows.append(run_method(f"{name}+lsq", mk, init_theta=th0, refine_kw=cfg["lsq_refine"]))
     for r in rows:
         r.pop("trace", None)
@@ -62,10 +83,20 @@ def main():
     ap.add_argument("--split", choices=["val", "test"], required=True)
     ap.add_argument("--workers", type=int, default=12)
     ap.add_argument("--limit", type=int, default=None, help="evaluate only the first N variants (smoke)")
+    ap.add_argument("--methods", default=None,
+                    help="comma list from brent,midpoint,grid,knn,mlp (default: all)")
+    ap.add_argument("--test-dir", default=None,
+                    help="folder with traj_test.npz / obs_test.npz of a held-out shift set (T4); train, validation, "
+                         "normaliser, kNN library and models still come from the config's dataset")
     args = ap.parse_args()
+    methods = parse_methods(args.methods)
+    if args.test_dir and args.split != "test":
+        ap.error("--test-dir requires --split test")
     cfg = json.loads(Path(args.config).read_text())
     dset = ROOT / "data" / cfg["dataset"]
-    out = ROOT / "results" / (f"{cfg['config_version']}_{args.split}" + ("" if args.limit is None else "_smoke"))
+    test_dir = Path(args.test_dir).resolve() if args.test_dir else None
+    out = ROOT / "results" / (f"{cfg['config_version']}_{args.split}" + (f"_{test_dir.name}" if test_dir else "")
+                              + ("" if args.limit is None else "_smoke"))
     out.mkdir(parents=True, exist_ok=True)
 
     norm = dict(np.load(dset / "normaliser.npz")); norm["fitted_on"] = str(norm["fitted_on"])
@@ -73,14 +104,18 @@ def main():
     Tva, Ova = load_split(dset, "val")
     Xtr, ytr = features(Otr, Ttr, norm)
     Xva, yva = features(Ova, Tva, norm)
-    T, O = (Tva, Ova) if args.split == "val" else load_split(dset, "test")
+    T, O = (Tva, Ova) if args.split == "val" else load_split(test_dir or dset, "test")
+    modes = tuple(int(m) for m in T["modes"]) if "modes" in T else (1, 2, 3)
     X, ytrue = features(O, T, norm)
 
     knn_best, knn_trials = tune_knn(cfg, Xtr, ytr, Xva, yva)
-    knn = KNNInit(knn_best["k"], knn_best["ic_weight"]).fit(Xtr, ytr)
-    t0 = time.perf_counter(); th_knn = knn.predict(X); knn_query_s = (time.perf_counter() - t0) / len(X)
-    inits, overhead = {"knn": th_knn}, {"knn": dict(build_s=knn.build_seconds, per_query_s=knn_query_s)}
-    for seed in cfg["mlp_seeds"]:
+    inits, overhead = {}, {}
+    if "knn" in methods:
+        knn = KNNInit(knn_best["k"], knn_best["ic_weight"]).fit(Xtr, ytr)
+        t0 = time.perf_counter(); th_knn = knn.predict(X); knn_query_s = (time.perf_counter() - t0) / len(X)
+        inits["knn"] = th_knn
+        overhead["knn"] = dict(build_s=knn.build_seconds, per_query_s=knn_query_s)
+    for seed in (cfg["mlp_seeds"] if "mlp" in methods else []):
         m = load_model(ROOT / "models" / cfg["model_version"] / f"seed{seed}" / "model.pkl")
         t0 = time.perf_counter(); th = predict_theta(m, X); bt = (time.perf_counter() - t0) / len(X)
         t0 = time.perf_counter(); predict_theta(m, X[:1]); single = time.perf_counter() - t0
@@ -89,12 +124,12 @@ def main():
 
     n = len(X) if args.limit is None else args.limit
     tasks = [(v, T["amps"][O["parent"][v]], T["phases"][O["parent"][v]], O["y"][v], O["mask"][v],
-              float(T["nu"][O["parent"][v]]), {k: float(a[v]) for k, a in inits.items()}, cfg) for v in range(n)]
+              float(T["nu"][O["parent"][v]]), {k: float(a[v]) for k, a in inits.items()}, cfg, methods, modes) for v in range(n)]
     # checkpointing: every finished variant is appended to runs.partial.jsonl; a restart skips them.
     # Results per variant are deterministic, so resumed and uninterrupted runs give identical rows.
     partial = out / "runs.partial.jsonl"
     rows = [json.loads(l) for l in partial.read_text().splitlines()] if partial.exists() else []
-    per_variant = 3 + len(inits)
+    per_variant = sum(m in methods for m in ("brent", "midpoint", "grid")) + len(inits)
     counts = {}
     for r in rows:
         counts[r["variant"]] = counts.get(r["variant"], 0) + 1
@@ -111,6 +146,8 @@ def main():
                 v = r["variant"]
                 r.update(n_sensors=int(O["n_sensors"][v]), noise=float(O["noise"][v]),
                          parent=int(O["parent"][v]))
+                if "mask_name" in O:
+                    r["mask_name"] = str(O["mask_name"][v])
                 init_name = r["method"].replace("+lsq", "")
                 if init_name in inits:
                     r["init_rel_err"] = float(abs(np.exp(inits[init_name][v]) - r["nu_true"]) / r["nu_true"])
@@ -123,7 +160,8 @@ def main():
     with open(out / "runs.csv", "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=keys); w.writeheader(); w.writerows(rows)
     (out / "meta.json").write_text(json.dumps(dict(
-        config=cfg, split=args.split, n_variants=n, knn_selected=knn_best, knn_trials=knn_trials,
+        config=cfg, split=args.split, n_variants=n, methods=list(methods),
+        test_dir=(test_dir.relative_to(ROOT).as_posix() if test_dir else None), ic_modes=list(modes), knn_selected=knn_best, knn_trials=knn_trials,
         init_overhead=overhead, workers=args.workers,
         timing_note="parallel workers: use solve counts; wall times indicative only",
         finished=time.strftime("%Y-%m-%d %H:%M:%S")), indent=2))

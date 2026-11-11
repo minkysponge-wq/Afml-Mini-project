@@ -1,0 +1,42 @@
+{
+  "config_version": "phaseC_v2_noaug",
+  "dataset": "phaseB_v2",
+  "model": {
+    "type": "sklearn MLPRegressor",
+    "hidden_layer_sizes": [
+      64,
+      64
+    ],
+    "activation": "relu",
+    "solver": "adam",
+    "batch_size": 64
+  },
+  "inputs": "64 standardised readings (missing->0) + 64 mask indicators + 6 IC features a*cos(phi), a*sin(phi)",
+  "target": "log nu, standardised with train mean/std",
+  "loss": "MSE",
+  "max_epochs": 400,
+  "patience": 30,
+  "tuning_grid": {
+    "learning_rate_init": [
+      0.001,
+      0.003
+    ],
+    "alpha": [
+      0.0001,
+      0.001
+    ]
+  },
+  "tuning_budget_note": "4 configs, selected by validation MSE only; test split never used for selection",
+  "train_variants": "16-sensor train variants only (no sensor-dropout augmentation); validation complete",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "change_note": "T5 ablation (b): phaseC_v2 without the 4/8-sensor training variants",
+  "train_filter": {
+    "n_sensors": [
+      16
+    ]
+  }
+}

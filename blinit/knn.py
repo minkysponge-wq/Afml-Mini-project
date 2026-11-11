@@ -3,6 +3,8 @@
 Library = TRAIN observation variants. A query is compared only with library entries that have the
 same sensor-availability mask, on [standardised available readings, w * IC features], and returns
 the inverse-distance-weighted mean log nu of its k nearest neighbours.
+A query whose mask is not in the library (unseen pattern) falls back to the all-sensors group and
+measures distance over the query's available readings plus the IC features only.
 """
 from __future__ import annotations
 
@@ -37,10 +39,16 @@ class KNNInit:
         out = np.empty(len(X))
         for i in range(len(X)):
             key = tuple(m[i])
-            if key not in self.groups:
-                raise KeyError("no library entries with this sensor mask (unseen pattern)")
-            L, th = self.groups[key]
-            q = np.concatenate([z[i][np.array(key)], self.w * ic[i]])
+            cols = np.array(key)
+            if key in self.groups:
+                L, th = self.groups[key]
+            else:                                   # unseen mask: all-sensors library, query's columns only
+                full = tuple(np.ones(len(key), bool))
+                if full not in self.groups:
+                    raise KeyError("unseen sensor mask and no all-sensors library group to fall back on")
+                L, th = self.groups[full]
+                L = L[:, np.concatenate([cols, np.ones(ic.shape[1], bool)])]
+            q = np.concatenate([z[i][cols], self.w * ic[i]])
             d = np.sqrt(np.sum((L - q) ** 2, axis=1))
             nn = np.argpartition(d, min(self.k, len(d) - 1))[: self.k]
             wts = 1.0 / (d[nn] + 1e-12)
