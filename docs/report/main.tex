@@ -1,0 +1,56 @@
+% IEEE conference format. Build on Overleaf (IEEEtran is built in) or locally with:
+%   pdflatex main && bibtex main && pdflatex main && pdflatex main
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+
+\begin{document}
+
+\title{Does a Learned Starting Point Make Viscosity Estimation Cheaper?\\
+A Cost-Counted Study on the Burgers Equation}
+
+% TODO: fill in team names, SRNs and e-mails.
+\author{
+\IEEEauthorblockN{Name 1 (SRN)}
+\IEEEauthorblockA{PES University}
+\and
+\IEEEauthorblockN{Name 2 (SRN)}
+\IEEEauthorblockA{PES University}
+\and
+\IEEEauthorblockN{Name 3 (SRN)}
+\IEEEauthorblockA{PES University}
+\and
+\IEEEauthorblockN{Name 4 (SRN)}
+\IEEEauthorblockA{PES University}
+}
+
+\maketitle
+
+\begin{abstract}
+We ask whether a neural network's guess of a physical parameter, used as the starting point of a
+simulator-based least-squares fit, reduces the cost of the fit. The task is to recover the viscosity of the
+one-dimensional Burgers equation from 4 to 16 noisy sensors with a known initial state. A two-layer
+perceptron trained on 27{,}000 simulated cases predicts the logarithm of the viscosity, and a bounded
+least-squares fit refines it. We count every simulator call, include the offline cost of the network, compare
+against a bounded scalar search (Brent's method) and a nearest-neighbour start, and pre-registered the test
+evaluation. All methods reach the same accuracy, which matches the Cram\'er--Rao bound. The learned start
+saves about 2 CPU-seconds per query against a midpoint start in every setting. Against Brent's search it
+saves 0.8--1.1 CPU-seconds at one stopping tolerance and nothing measurable at a tighter one, so the
+pre-registered criterion is not met; matched on typical precision the gain is about 1.2$\times$, against a
+2$\times$ target. The saving disappears for starting states and sensor patterns not seen in training.
+\end{abstract}
+
+\begin{IEEEkeywords}
+learned initialization, inverse problems, Burgers equation, parameter estimation, amortized optimization
+\end{IEEEkeywords}
+
+\input{sec_front}
+\input{sec_results}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

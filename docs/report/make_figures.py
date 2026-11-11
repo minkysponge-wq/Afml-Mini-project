@@ -33,11 +33,11 @@ def arrow(ax, p, q, color=GREY, ls="-"):
 def pipeline():
     fig, ax = plt.subplots(figsize=(10, 4.6))
     ax.set_xlim(0, 10); ax.set_ylim(0, 4.6); ax.axis("off")
-    box(ax, 0.1, 2.9, 2.0, 1.3, "Sparse, noisy readings\n4 / 8 / 16 sensors x 4 times\n+ known starting state", GREY)
+    box(ax, 0.1, 2.9, 2.0, 1.3, "Sparse, noisy readings\n4 / 8 / 16 sensors\nx 4 times\n+ known starting state", GREY, fs=8.5)
     box(ax, 2.9, 3.3, 2.1, 0.9, "MLP (2 x 64)\npredicts log viscosity", GREEN)
     box(ax, 2.9, 2.15, 2.1, 0.8, "midpoint / grid / kNN\nstarting guess", ORANGE)
     box(ax, 5.8, 2.7, 2.0, 1.2, "Least-squares fit\n(trust region, bounded)\ncalls the simulator", ORANGE)
-    box(ax, 2.9, 0.75, 4.9, 0.85, "Brent bounded scalar search (no starting guess; calls the simulator)", BLUE)
+    box(ax, 2.9, 0.75, 4.9, 0.85, "Brent bounded scalar search\n(no starting guess; calls the simulator)", BLUE)
     box(ax, 8.5, 1.7, 1.4, 1.3, "Estimated\nviscosity\n+ cost", GREY)
     box(ax, 5.8, 4.05, 2.0, 0.45, "Burgers simulator (256 cells)", GREY, fs=8)
     arrow(ax, (2.1, 3.7), (2.9, 3.75)); arrow(ax, (2.1, 3.3), (2.9, 2.6)); arrow(ax, (2.1, 3.0), (2.9, 1.3))

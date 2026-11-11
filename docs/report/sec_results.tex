@@ -1,0 +1,200 @@
+% Sections VI-IX. Every number is taken from a committed file; the source is named in a comment.
+
+\section{Results}
+
+\subsection{Development findings: how much can a starting point save?}
+% results/phaseA/summary.json, results/phaseA_noise/, results/phaseA/init_sweep.csv; RESEARCH_LOG.md Session 1-2
+On 20 noise-free development problems with 16 sensors, every method recovered $\nu$ (worst relative error
+$1.2\times10^{-5}$), and the misfit $J$ had a single minimum in all of them. With 1\% and 5\% noise and 4 or
+8 sensors, objective scans of 160 problem--condition pairs again showed no second minimum, and every method
+reached the same optimum. Hard cases are therefore hard because the data carry little information, not
+because an optimiser fails. Fig.~\ref{fig:objective} shows typical misfit curves.
+
+This bounds what any starting point can do. A start placed at the true value (a diagnostic that reads the
+truth, never a method) still needed about 6 simulator runs to stop under noise, against 9--10 for Brent.
+No initialiser can therefore beat Brent by much more than 1.5$\times$ in runs on this problem. A start
+within 1\% of the truth saved about 3 runs, one within 10\% about 1. The MLP's validation error is 8--12\%
+(median over three seeds), so the expected saving was about one run per query before any test was run.
+% models/phaseC_v2/summary.json
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/objective_curves.png}
+\caption{Misfit $J$ against $\nu$ for development problems: one minimum in every case.
+Source: \texttt{results/phaseA/figures}.}
+\label{fig:objective}
+\end{figure}
+
+\subsection{Pre-registered test: learned start versus Brent}
+% results/phaseD_v1_3seeds_test/analysis.json, results/phaseD_v1_tightlsq_3seeds_test/analysis.json
+Table~\ref{tab:test} gives the 450 test cases at the primary tolerance. All methods reach the same accuracy
+(median relative error 0.22\%, 90th percentile 2.6\%), with no simulator failures, so the comparison is about
+cost alone. The MLP start needs the fewest runs (median 8) and the lowest mean cost.
+
+\begin{table}[t]
+\caption{Pilot test, 450 cases, primary tolerance. Error: relative error in $\nu$.}
+\label{tab:test}
+\centering\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & Error med / p90 & Runs med & CPU-s mean / med \\
+\midrule
+Brent & 0.22\% / 2.6\% & 9 & 9.01 / 8.12 \\
+Midpoint + LSQ & 0.22\% / 2.6\% & 10 & 11.06 / 7.37 \\
+Grid + LSQ & 0.22\% / 2.6\% & 12 & 12.79 / 11.75 \\
+kNN + LSQ & 0.22\% / 2.6\% & 8 & 9.27 / 7.65 \\
+MLP + LSQ (seed 0) & 0.22\% / 2.6\% & 8 & 8.20 / 6.75 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Fig.~\ref{fig:paired} shows the pre-registered statistic. At the primary tolerance all three seeds are
+cheaper than Brent, by a median of 0.80 to 1.07 CPU-seconds per query, with intervals that exclude zero.
+At the accuracy-matched tolerance the median differences shrink to $-0.03$ to $-0.12$ and every interval
+includes zero; the mean difference turns positive ($+0.21$ to $+0.56$), meaning the MLP route is slightly
+costlier on average. The success rule required an interval excluding zero under both settings for two of
+three seeds; it held for three seeds under one setting and none under the other.
+\textbf{The pre-registered result is therefore not positive.} The ratio of median costs, Brent over MLP, is
+1.13--1.22 at the primary tolerance and 1.01--1.05 at the matched one, so \textbf{the 2$\times$ target is not
+met}. Against the midpoint start, the MLP start saves 1.9--2.5 CPU-seconds per query in both settings, with
+every interval below zero: the learned start does help the least-squares fit, just not enough to overtake
+Brent. kNN is no cheaper than Brent at the primary tolerance and costlier at the matched one.
+
+Counting offline cost (2{,}254 CPU-seconds for data generation, tuning and training of seed 0), the break-even
+point against Brent is 2{,}790, 2{,}625 and 4{,}455 queries for the three seeds at the primary tolerance. At
+the matched tolerance the mean saving is not positive, so there is no finite break-even.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/test_paired.png}
+\caption{Pre-registered statistic on the pilot test: median paired cost difference, MLP+LSQ minus Brent,
+with 95\% bootstrap intervals over trajectories. Source: \texttt{results/phaseD\_v1*\_3seeds\_test}.}
+\label{fig:paired}
+\end{figure}
+
+\subsection{Why the saving depends on the tolerance}\label{sec:tol}
+% results/phaseF_tolerance/{curves.csv,matched.json}
+The two tolerance settings are not exactly matched in precision, so on validation we ran each method at three
+or four tolerances and measured precision against a very tight Brent solution ($\texttt{xatol}=10^{-7}$) for
+each case (Fig.~\ref{fig:tol}). Matched on the 90th-percentile precision, the MLP route is cheaper than Brent
+by a factor of 1.17--1.22 in mean cost across precisions from $10^{-3}$ to $3\times10^{-5}$. Matched on the
+worst case, the factor is 1.05 at $10^{-3}$ and 0.95 at $3\times10^{-4}$.
+
+The worst case is where least squares is weak. Each tenfold tightening of Brent's tolerance cuts its largest
+error about tenfold. From the MLP start the largest error falls only from $5.0\times10^{-4}$ to
+$2.7\times10^{-4}$ between \texttt{xtol} $10^{-4}$ and $10^{-5}$, and from the midpoint start one case stays
+at $1.1\times10^{-3}$ at both. The primary setting looked favourable because least squares stops early on a
+few hard cases; once those are held to Brent's precision the saving goes. These curves use validation data,
+on which the MLP was early-stopped and tuned, so they favour the MLP if anything.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/tolerance_curves.png}
+\caption{Cost against precision across stopping tolerances (validation). Left: 90th percentile; right:
+worst case. Source: \texttt{results/phaseF\_tolerance}.}
+\label{fig:tol}
+\end{figure}
+
+\subsection{The estimates reach the Cram\'er--Rao bound}
+% results/phaseF_crb/table_test.json, table_val.json
+For readings $y=f(\theta)+\varepsilon$ with Gaussian noise of standard deviation $\sigma$, the Fisher
+information about $\theta=\log\nu$ is $I(\theta)=\sigma^{-2}\sum_i (\partial f_i/\partial\theta)^2$ over the
+available readings, and an unbiased estimator has $\mathrm{Var}(\hat\theta)\ge 1/I(\theta)$. We computed the
+derivatives by central differences in $\theta$ (step $10^{-3}$; a step of $10^{-4}$ changes them by under 1\%)
+and formed $z=(\hat\theta-\theta)/\sqrt{1/I}$ for the 300 noisy test cases. If the estimator attains the
+bound, $z$ has unit spread. On test, the spread of $z$ is 0.947 for Brent and 0.944 for the MLP route (0.965
+and 0.966 on validation), the mean is $-0.002$, and 3.3--3.7\% of cases have $|z|>2$, against 5\% for a unit
+normal (Fig.~\ref{fig:crb}). \textbf{Both methods extract all the information the sensors carry.} Accuracy
+cannot separate the methods, and no method could be more accurate on these data; only cost is left to
+compare. The bound assumes an unbiased estimator and ignores the bounds on $\nu$, which can let estimates
+near the bounds beat it slightly.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{figures/crb_test.png}
+\caption{Empirical error of $\log\nu$ against the Cram\'er--Rao bound, per sensor/noise condition (test).
+Points on the line attain the bound. Source: \texttt{results/phaseF\_crb}.}
+\label{fig:crb}
+\end{figure}
+
+\subsection{Robustness to shifted data}\label{sec:robust}
+% results/phaseD_v1_3seeds_test_phaseF_{highfreq,finegrid,unseenmask}/analysis.json; docs/preregistration_phaseF.md
+Three further test sets of 50 new trajectories each were generated after their analysis was pre-registered;
+the models were not changed. Fig.~\ref{fig:robust} summarises them.
+
+\emph{Higher-frequency starting states} (sine modes 2--4 instead of 1--3). The MLP's own error triples, to a
+median of 28--33\% (against 9--14\% on the pilot test). Refinement still reaches the same accuracy as Brent,
+but the saving disappears: the median difference against Brent is $+0.07$ to $+0.38$ CPU-seconds with every
+interval including zero.
+
+\emph{Data from a finer grid} (simulated on 1{,}024 cells, inverted on 256). This mimics data that do not come
+from the model used for fitting. Every method's error rises to a median of 0.62\%, a model error no method
+removes. The MLP's own error is unchanged (9--11\%) and the saving against Brent holds: $-1.19$ to $-1.41$
+CPU-seconds, every interval below zero, break-even 1{,}567--2{,}606 queries.
+
+\emph{Sensor patterns not seen in training.} On four new patterns the MLP alone has a median error of
+49--61\%, no better than guessing the midpoint (57\% on validation), and the saving against Brent is gone
+(median difference $+0.40$ to $+0.70$; intervals include zero). On the two patterns seen in training,
+evaluated on the same trajectories, the saving remains ($-0.91$ to $-1.17$, every interval below zero).
+kNN, which falls back to all-sensor neighbours and compares only the available readings, gives a better start
+on unseen patterns (22--31\%) but is still costlier than Brent.
+
+The pattern is the one stated before the runs: when the inputs differ from training, the network's start
+gets worse and the least-squares fit absorbs it, at the price of the saving.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/robustness.png}
+\caption{Robustness sets at the primary tolerance. Left: MLP+LSQ minus Brent, three seeds, 95\% intervals.
+Middle: error of the MLP alone and after refinement. Right: median cost. Source:
+\texttt{results/phaseD\_v1\_3seeds\_test\_phaseF\_*}.}
+\label{fig:robust}
+\end{figure*}
+
+\subsection{Ablations}
+% results/phaseF_ablations/ablations.md (validation)
+\emph{Network alone versus network plus refinement.} The MLP alone has a median error of 8.2\% (90th
+percentile 33\%); after refinement it is 0.245\%. The network alone is about 33 times less accurate than the
+data allow, so refinement cannot be dropped.
+
+\emph{Training with missing sensors.} Our MLP trains on all three sensor counts. Trained on 16-sensor cases
+only, its error at 4 sensors is 55\% (against 10--13\%) and at 8 sensors 36\% (against 9--11\%); at 16
+sensors the two are equal. Together with the unseen-pattern result, this says the augmentation helps exactly
+for the patterns it contains.
+
+\emph{Known starting state as input.} Setting the six starting-state inputs to zero raises the error at 4
+sensors from 10--13\% to 14--17\% and changes nothing outside the seed spread at 8 or 16 sensors. The network
+uses the starting state only when the readings are few.
+
+\section{Limitations}
+The study covers one equation, one unknown scalar, and synthetic data from our own solver; the fine-grid set
+is the only test of model mismatch. The competitor that matters, a one-dimensional bounded search, is
+unusually strong because the misfit has a single minimum; with several unknowns or several minima a learned
+start may matter more. Cost is counted in solver steps times a fixed time per step, measured once on one
+laptop, because parallel wall-clock times were not clean; network inference time is included but is
+negligible. Test sets have 50 trajectories each, so intervals are wide. The offline cost uses generation wall
+time multiplied by worker count, an upper bound. Validation data were used both for early stopping and for
+the tolerance curves and ablations, which favours the learned method in those analyses. An optional larger
+test set for the main claim (200 trajectories) was planned and not run.
+
+\section{Conclusion}
+A small network's guess makes a least-squares fit of Burgers viscosity cheaper than starting from the middle
+of the range, by about 2 CPU-seconds per query, in every setting we ran. It does not make the fit reliably
+cheaper than Brent's bounded search, which needs no guess: at equal typical precision it saves about
+1.2$\times$, at equal worst-case precision about nothing, and the pre-registered test was not positive. Where
+it does save, it pays back its offline cost after roughly 1{,}600--4{,}500 queries. The saving vanishes when
+the starting states or sensor patterns differ from training. Since both methods already reach the
+Cram\'er--Rao bound, the only room left is cost, and on a single-minimum scalar problem a direct search
+leaves little of it. We did not observe the 2$\times$ speed-up the proposal hypothesised.
+
+\section*{Data and Code Availability}
+No public dataset is used. All data are generated by the solver in the repository from versioned
+configuration files (\texttt{configs/phaseB\_v2.json} and \texttt{configs/phaseF\_*.json}) and regenerate
+identically with one command each. The numerical scheme follows PDEBench~\cite{takamoto2022}, whose released
+Burgers data we did not use because they fix one viscosity per file and use different starting states.
+Code, configurations, trained models, result files and a log of every run:
+\url{https://github.com/minkysponge-wq/Afml-Mini-project}.
+
+\section*{Acknowledgment}
+The numerical scheme of our solver follows the Burgers data generator of PDEBench, software developed by NEC
+Laboratories Europe; our solver is an independent re-implementation and contains none of its code.
