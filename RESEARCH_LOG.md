@@ -286,3 +286,57 @@ tight +0.94 [+0.44, +1.65]); no finite break-even in either setting.
 the LSQ refiner by about 2 CPU-s per query vs midpoint; (2) relative to Brent the saving is at most ~1.2x and depends on the
 tolerance; (3) kNN gives no saving. Narrow follow-ups allowed by WORKFLOW Phase E (each needs approval): Brent inside a learned
 bracket, or harder regimes.
+
+### Environment for Session 3 [RUN]
+This was a different machine (12 cores) running Python 3.14.3, numpy 2.4.4, scipy 1.17.1 and scikit-learn 1.8.0, not
+the pinned 3.10 stack. The dataset was rebuilt with `build_dataset --config configs/phaseB_v2.json --workers 10`
+(train 200 s wall); all 9 integrity checks pass. The committed `data/phaseB_v2/integrity.json` was restored afterwards,
+so break-even keeps the original generation timings. Reproduction checks against committed results:
+- validation nu_true is identical;
+- MLP seed-0 predictions match to 7e-16 (scikit-learn gives an InconsistentVersionWarning only);
+- Brent on 3 sampled validation variants gives bit-identical solver steps and estimates.
+`python -m pytest -q` -> 19 passed (including the 3 new bracket tests).
+
+### Follow-up: learned bracket for Brent [DECISION] [RUN] [RESULT]
+**Rationale.** After the T1 no-go, we tried one narrow alternative allowed by WORKFLOW Phase E: Brent searches
+[theta_MLP - w, theta_MLP + w] with Brent's own xatol 1e-3, so precision is matched by construction. If the estimate
+hits an interior edge, Brent re-runs on the full bounds, and those solves are counted.
+**Code.** `blinit/inverse.py::brent_bracket` and `blinit/experiments/followup_bracket.py`.
+**Approval.** The user approved this scope addition on 2026-11-11.
+
+**Validation sweep** (`configs/followup_bracket_val.json`, MLP seed 0, 450 variants, 1,323 s on 11 workers):
+
+| w | Mean CPU-s | Median CPU-s | Fallback rate |
+|---|---|---|---|
+| 0.1 | 11.67 | 9.62 | 44% |
+| 0.2 | 9.07 | 8.26 | 22% |
+| 0.3 | 8.24 | 7.72 | 12% |
+| 0.5 | 8.03 | 6.72 | 3.6% |
+| brent | 9.05 | 7.41 | — |
+
+Selected w = 0.5 (lowest mean). **[LIMITATION]** 0.5 is the edge of the grid.
+
+**Pre-registration** committed before the test run: `docs/preregistration_followup_bracket.md` and
+`configs/followup_bracket_test.json` (commit bfd590c). This is a second, declared use of the pilot test split.
+
+**Test** (`python -m blinit.experiments.followup_bracket run --config configs/followup_bracket_test.json --split test`,
+829 s on 11 workers; analysis with `analyze --dir results/followup_bracket_w0.5_3seeds_test --brent-dir results/phaseD_v1_3seeds_test`).
+0 simulator failures. Paired difference vs Brent, median [95% CI], then mean, in CPU-s:
+
+| Seed | Median [95% CI] | Mean | Fallback rate | Break-even |
+|---|---|---|---|---|
+| s0 | -1.04 [-1.32, -0.79] | -0.69 | 2.7% | ~3,260 queries |
+| s1 | -0.96 [-1.23, -0.71] | -0.74 | 2.2% | ~3,020 queries |
+| s2 | -1.11 [-1.39, -0.88] | -0.92 | 1.6% | ~2,380 queries |
+
+- The CI excludes 0 in all 27 seed x cell combinations.
+- Accuracy: median error 2.2e-3 and p90 2.6e-2, the same as Brent; nu differs from Brent's estimate by at most 3.3e-4.
+- Median CPU ratio brent/bracket: 1.04 / 1.04 / 1.11.
+- **Verdict (pre-registered):** a positive saving is established for 3/3 seeds. **2x target not met.**
+
+**[LIMITATION]** The follow-up hypothesis was formed after seeing the main test result, and tested on the same test
+trajectories (under its own pre-registration). It needs confirmation on fresh trajectories before being a headline claim.
+
+### Report assets [RUN]
+`python -m blinit.experiments.report_figures` writes `results/report/figures/*.png` and `results/report/tables.json`
+from saved results only. The draft report is `docs/report_draft.md`, and the README is updated.
