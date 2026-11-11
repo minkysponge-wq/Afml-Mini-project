@@ -54,6 +54,10 @@ Approximate times on an 8–12-core laptop. Every evaluation is checkpointed and
 | Slides | `python docs/slides/build_slides.py` | ~5 s |
 | Paper | upload `docs/report/` to Overleaf (IEEEtran), or `pdflatex main && bibtex main && pdflatex main && pdflatex main` | — |
 
+Rebuilding the dataset rewrites `data/phaseB_v2/integrity.json` with this machine's generation time, which the
+break-even uses. To reproduce the logged break-even numbers exactly, restore the committed file afterwards
+(`git checkout data/phaseB_v2/integrity.json`); all other numbers are unaffected.
+
 Phase A development runs (`blinit.experiments.phase_a`, `phase_a_noise`, `init_sweep`) are documented in
 `RESEARCH_LOG.md`; their outputs are in `results/phaseA*/`.
 
