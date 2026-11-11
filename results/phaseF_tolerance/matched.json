@@ -1,0 +1,196 @@
+{
+  "cpu_s_mean at matched prec_p90": {
+    "overlap": [
+      1.4418854228231836e-05,
+      0.0015487776957437951
+    ],
+    "targets": {
+      "0.001": {
+        "cost": {
+          "brent": 8.210348537440186,
+          "midpoint+lsq": 10.696343306854029,
+          "mlp_s0+lsq": 6.709459522390944
+        },
+        "brent_over_mlp": 1.2236974543240697,
+        "midpoint_over_mlp": 1.5942183228258515
+      },
+      "0.0003": {
+        "cost": {
+          "brent": 8.72777115151652,
+          "midpoint+lsq": 11.354240785500476,
+          "mlp_s0+lsq": 7.223314955963307
+        },
+        "brent_over_mlp": 1.2082778066199633,
+        "midpoint_over_mlp": 1.5718878180892315
+      },
+      "0.0001": {
+        "cost": {
+          "brent": 9.18312584726078,
+          "midpoint+lsq": 11.959301678222738,
+          "mlp_s0+lsq": 7.726055333037293
+        },
+        "brent_over_mlp": 1.1885917782639899,
+        "midpoint_over_mlp": 1.5479182018129887
+      },
+      "3e-05": {
+        "cost": {
+          "brent": 9.61205182821864,
+          "midpoint+lsq": 12.519560896305986,
+          "mlp_s0+lsq": 8.217148951199931
+        },
+        "brent_over_mlp": 1.1697550921010156,
+        "midpoint_over_mlp": 1.5235893824801343
+      },
+      "1e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": 13.053662293846699,
+          "mlp_s0+lsq": 8.692454485311922
+        },
+        "midpoint_over_mlp": 1.5017233988287346
+      }
+    }
+  },
+  "cpu_s_median at matched prec_p90": {
+    "overlap": [
+      1.4418854228231836e-05,
+      0.0015487776957437951
+    ],
+    "targets": {
+      "0.001": {
+        "cost": {
+          "brent": 6.871932260714588,
+          "midpoint+lsq": 6.112233246237607,
+          "mlp_s0+lsq": 4.899894724894263
+        },
+        "brent_over_mlp": 1.4024652868155,
+        "midpoint_over_mlp": 1.2474213405410473
+      },
+      "0.0003": {
+        "cost": {
+          "brent": 7.204388121427727,
+          "midpoint+lsq": 6.464852049175621,
+          "mlp_s0+lsq": 5.192914585927098
+        },
+        "brent_over_mlp": 1.3873496284633224,
+        "midpoint_over_mlp": 1.2449371046262727
+      },
+      "0.0001": {
+        "cost": {
+          "brent": 7.536468965200513,
+          "midpoint+lsq": 6.775412318233177,
+          "mlp_s0+lsq": 5.4754162546940135
+        },
+        "brent_over_mlp": 1.37641936514682,
+        "midpoint_over_mlp": 1.2374241524422351
+      },
+      "3e-05": {
+        "cost": {
+          "brent": 7.9498349342155405,
+          "midpoint+lsq": 7.001604698504794,
+          "mlp_s0+lsq": 5.769164140492878
+        },
+        "brent_over_mlp": 1.3779873029468634,
+        "midpoint_over_mlp": 1.2136254972122573
+      },
+      "1e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": 7.214585425783152,
+          "mlp_s0+lsq": 6.050935565363565
+        },
+        "midpoint_over_mlp": 1.1923090814386603
+      }
+    }
+  },
+  "cpu_s_mean at matched prec_max": {
+    "overlap": [
+      0.0011239824004995271,
+      0.006185445213867478
+    ],
+    "targets": {
+      "0.001": {
+        "cost": {
+          "brent": 8.825665085081019,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": 8.437024562060726
+        },
+        "brent_over_mlp": 1.0460636946309148
+      },
+      "0.0003": {
+        "cost": {
+          "brent": 9.308476352674175,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": 9.778922273179433
+        },
+        "brent_over_mlp": 0.9518918437673295
+      },
+      "0.0001": {
+        "cost": {
+          "brent": 9.716853836347196,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      },
+      "3e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      },
+      "1e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      }
+    }
+  },
+  "cpu_s_median at matched prec_max": {
+    "overlap": [
+      0.0011239824004995271,
+      0.006185445213867478
+    ],
+    "targets": {
+      "0.001": {
+        "cost": {
+          "brent": 7.266777293421008,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": 5.89981070475156
+        },
+        "brent_over_mlp": 1.231696686059525
+      },
+      "0.0003": {
+        "cost": {
+          "brent": 7.656940132302429,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": 6.962497890220651
+        },
+        "brent_over_mlp": 1.0997403881525298
+      },
+      "0.0001": {
+        "cost": {
+          "brent": 8.051317354778131,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      },
+      "3e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      },
+      "1e-05": {
+        "cost": {
+          "brent": null,
+          "midpoint+lsq": null,
+          "mlp_s0+lsq": null
+        }
+      }
+    }
+  }
+}
