@@ -1,0 +1,28 @@
+{
+  "config": {
+    "config_version": "followup_bracket",
+    "dataset": "phaseB_v2",
+    "model_version": "phaseC_v2",
+    "mlp_seeds": [
+      0
+    ],
+    "widths": [
+      0.1,
+      0.2,
+      0.3,
+      0.5
+    ],
+    "widths_note": "half-widths in log-nu units (full range is ln 10 = 2.30). MLP seed-0 val neural-only error: median 8%, p90 33% (|log err| ~0.08 / ~0.29). Width selected on VALIDATION only, by lowest mean CPU-s per query (mean drives break-even).",
+    "brent": {
+      "xatol": 0.001,
+      "maxiter": 100
+    },
+    "brent_note": "same stopping rule as the Brent baseline in phaseD_v1 / phaseD_v1_tightlsq, so precision is matched by construction",
+    "fallback": "estimate within 2*xatol of an interior bracket edge -> Brent re-run on full bounds (counted)"
+  },
+  "split": "val",
+  "n_variants": 450,
+  "workers": 11,
+  "timing_note": "parallel workers: cost from solver steps only",
+  "finished": "2026-11-11 19:45:08"
+}

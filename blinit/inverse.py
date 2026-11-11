@@ -83,13 +83,38 @@ def brent_bounded(p: Problem, xatol=1e-4, maxiter=100):
     return float(res.x), dict(status=int(res.status), success=bool(res.success), nfev=int(res.nfev))
 
 
-def run_method(name, make_problem, init_theta=None, refine_kw=None, brent_kw=None, grid_k=5):
+def brent_bracket(p, center, width, xatol=1e-3, maxiter=100, edge_tol=None):
+    """Brent restricted to [center - width, center + width] (clipped to the global bounds).
+
+    If the result lies within edge_tol (default 2 * xatol) of an interior bracket edge, the minimum may be
+    outside the bracket, so Brent is re-run on the full bounds. Every solve, including the fallback, is
+    counted by the shared Problem (exact repeats are memoised, as for every method).
+    """
+    lo, hi = max(TH_LO, center - width), min(TH_HI, center + width)
+    edge_tol = 2 * xatol if edge_tol is None else edge_tol
+    res = minimize_scalar(p.objective, bounds=(lo, hi), method="bounded",
+                          options=dict(xatol=xatol, maxiter=maxiter))
+    th = float(res.x)
+    at_edge = (lo > TH_LO and th - lo < edge_tol) or (hi < TH_HI and hi - th < edge_tol)
+    info = dict(bracket_lo=lo, bracket_hi=hi, fallback=bool(at_edge), status=int(res.status),
+                success=bool(res.success))
+    if at_edge:
+        th, finfo = brent_bounded(p, xatol=xatol, maxiter=maxiter)
+        info.update(status=finfo["status"], success=finfo["success"])
+    return th, info
+
+
+def run_method(name, make_problem, init_theta=None, refine_kw=None, brent_kw=None, grid_k=5,
+               bracket_width=None):
     """Run one method on a fresh Problem; return estimate and cost accounting."""
     p = make_problem()
     t0 = time.perf_counter()
     info = {}
     if name == "brent":
         th, info = brent_bounded(p, **(brent_kw or {}))
+    elif name.endswith("+brent_bracket"):    # learned bracket for direct search (follow-up method)
+        th, info = brent_bracket(p, float(init_theta), bracket_width, **(brent_kw or {}))
+        info.update(theta0=float(init_theta), bracket_width=bracket_width)
     else:
         if name == "midpoint+lsq":
             th0 = 0.5 * (TH_LO + TH_HI)

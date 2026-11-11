@@ -6,7 +6,8 @@ strong classical alternatives (Brent's bounded scalar search, midpoint, coarse g
 count every simulator run plus the network's offline cost, and pre-registered the test evaluation.
 
 **Status (2026-11-11): complete.** All experiments, the IEEE paper (`docs/report/`) and the slides
-(`docs/slides/`) are in the repository. Every run and decision is in `RESEARCH_LOG.md`.
+(`docs/slides/`) are in the repository. Every run and decision is in `RESEARCH_LOG.md`. An earlier Markdown draft
+of the report is kept in `docs/report_draft.md`.
 
 ## Main results (test split unless marked)
 | Question | Answer | Source |
@@ -17,7 +18,8 @@ count every simulator run plus the network's offline cost, and pre-registered th
 | 2x target | **Not met.** Brent/MLP median cost ratio 1.13–1.22 (primary), 1.01–1.05 (matched) | same |
 | At matched precision (validation) | ~1.2x cheaper at equal p90 precision; ~1.0x at equal worst-case precision | `results/phaseF_tolerance/` |
 | Break-even vs Brent | 2,625–4,455 queries (primary); none at the matched tolerance | `analysis.json` |
-| Robustness | Saving holds for fine-grid data; disappears for higher-frequency starting states and unseen sensor patterns | `results/phaseD_v1_3seeds_test_phaseF_*/` |
+| Follow-up: MLP sets a ±0.5 bracket for Brent (separately pre-registered) | Saves 0.96–1.11 CPU-s (median) and 0.69–0.92 (mean) vs plain Brent at Brent's own precision, all 3 seeds, every CI below 0; median ratio 1.04–1.11; break-even ~2,400–3,300 queries. Tested on the same test trajectories after seeing the main result | `results/followup_bracket_w0.5_3seeds_test/` |
+| Robustness | LSQ saving holds for fine-grid data; disappears for higher-frequency starting states and unseen sensor patterns | `results/phaseD_v1_3seeds_test_phaseF_*/` |
 | Ablations (validation) | Refinement is necessary (8.2% → 0.245%); sensor-dropout training matters at 4–8 sensors; IC inputs matter only at 4 sensors | `results/phaseF_ablations/` |
 
 ## Dataset
@@ -31,53 +33,56 @@ are not committed (they are rebuilt in ~4 minutes).
 
 ## Setup
 ```
-python -m pip install -r requirements.txt     # Python 3.10+, CPU only
-python -m pytest -q                           # 26 tests, ~30 s
+python -m pip install -r requirements.txt     # Python 3.10 (pinned versions used for all logged runs), CPU only
+python -m pytest -q                           # ~30 s
+python -m blinit.experiments.build_dataset --config configs/phaseB_v2.json --workers 8   # ~4 min; data/ is not in git
 ```
+The dataset regenerates bit-identically from its config. Rebuilding overwrites `data/phaseB_v2/integrity.json`,
+whose generation timings feed the break-even numbers, so restore it afterwards with
+`git checkout -- data/phaseB_v2/integrity.json` to reproduce the logged break-even numbers exactly. The pickled MLPs
+in `models/` were saved with scikit-learn 1.7.2; newer versions warn on load, but predictions were verified identical
+(to 1e-15) with scikit-learn 1.8.0.
 
 ## Reproduce
 Approximate times on an 8–12-core laptop. Every evaluation is checkpointed and resumes if interrupted.
 
 | Step | Command | Time |
 |---|---|---|
-| Build dataset (train/val/test) | `python -m blinit.experiments.build_dataset --config configs/phaseB_v2.json --workers 8` | ~4 min |
 | Smoke test (4 cases) | `python -m blinit.experiments.evaluate --split val --limit 4 --workers 4` | ~1 min |
 | Re-analyse validation (no simulation) | `python -m blinit.experiments.analyze_d --dir results/phaseD_v1_val` | ~10 s |
+| Phase A pilot / figures | `python -m blinit.experiments.phase_a` (~1 h); `python -m blinit.experiments.phase_a_report --dir results/phaseA` | |
+| Phase A′ noise pilot; init sweep | `python -m blinit.experiments.phase_a_noise --workers 10`; `python -m blinit.experiments.init_sweep` | long |
 | Train MLP (models are committed) | `python -m blinit.experiments.train_mlp --config configs/phaseC_v2.json` | ~10 min |
 | Validation comparison | `python -m blinit.experiments.evaluate --split val --workers 12` | ~25 min |
 | Pilot test (pre-registered), both tolerances | `python -m blinit.experiments.evaluate --config configs/phaseD_v1_test.json --split test --workers 12` and `... phaseD_v1_tightlsq_test.json`, then `analyze_d --dir results/phaseD_v1_3seeds_test` (and `..._tightlsq_...`) | ~45 min each |
+| Follow-up: learned bracket for Brent | `python -m blinit.experiments.followup_bracket run --config configs/followup_bracket_test.json --split test`, then `... analyze --dir results/followup_bracket_w0.5_3seeds_test --brent-dir results/phaseD_v1_3seeds_test` | ~20 min |
 | T2 tolerance curves (val) | `python -m blinit.experiments.evaluate --config configs/phaseF_tol_<point>.json --split val --methods <brent or midpoint,mlp> --workers 12` for the 5 configs, then `python -m blinit.experiments.tolerance_curves` | ~5–15 min each |
 | T3 Cramér–Rao bound | `python -m blinit.experiments.crb --split val` and `--split test` | ~1 min each |
 | T4 robustness sets | `python -m blinit.experiments.build_shift_set --config configs/phaseF_<highfreq/finegrid/unseenmask>.json`, then `evaluate --config configs/phaseD_v1_test.json --split test --test-dir data/phaseF_<set> --workers 12` and `analyze_d --dir results/phaseD_v1_3seeds_test_phaseF_<set>` | ~25–50 min each |
 | T5 ablations | `train_mlp --config configs/phaseC_v2_noaug.json`, `... phaseC_v2_noic.json`, then `python -m blinit.experiments.ablations` | ~15 min |
-| Report figures | `python docs/report/make_figures.py` | ~10 s |
+| Paper figures | `python docs/report/make_figures.py` (paper); `python -m blinit.experiments.report_figures` (Markdown draft) | ~10 s |
 | Slides | `python docs/slides/build_slides.py` | ~5 s |
-| Paper | upload `docs/report/` to Overleaf (IEEEtran), or `pdflatex main && bibtex main && pdflatex main && pdflatex main` | — |
-
-Rebuilding the dataset rewrites `data/phaseB_v2/integrity.json` with this machine's generation time, which the
-break-even uses. To reproduce the logged break-even numbers exactly, restore the committed file afterwards
-(`git checkout data/phaseB_v2/integrity.json`); all other numbers are unaffected.
-
-Phase A development runs (`blinit.experiments.phase_a`, `phase_a_noise`, `init_sweep`) are documented in
-`RESEARCH_LOG.md`; their outputs are in `results/phaseA*/`.
+| Paper PDF | upload `docs/report/` to Overleaf (IEEEtran), or `pdflatex main && bibtex main && pdflatex main && pdflatex main` | — |
 
 ## Layout
 ```
-blinit/            simulator.py (FV Burgers solver), observe.py (sensors), inverse.py (Brent, LSQ, cost counting),
+blinit/            simulator.py (FV Burgers solver), exact.py (Cole–Hopf), observe.py (sensors),
+                   inverse.py (Problem, Brent, LSQ, grid, learned-bracket Brent, cost counting),
                    data.py (dataset + integrity checks), knn.py, model.py (MLP), crb.py (Cramér–Rao bound),
                    experiments/ (one module per experiment)
 configs/           versioned JSON configs; a config that produced logged results is never edited
 data/              integrity reports (data .npz files are rebuilt, not committed)
-models/            trained MLPs (phaseC_v2 main; _noaug, _noic ablations)
-results/           runs.csv, analysis.json and figures per experiment
+models/            trained MLPs (phaseC_v2 main; _noaug, _noic ablations; phaseC_v1 earlier)
+results/           runs.csv, analysis.json and figures per experiment; results/report/ = Markdown-draft figures
 tests/             pytest suite
-docs/              report/ (IEEE paper), slides/, preregistration_*.md, literature_audit.md, bibliography.md, WORKFLOW.md
+docs/              report/ (IEEE paper), slides/, report_draft.md, preregistration_*.md, literature_audit.md,
+                   bibliography.md, WORKFLOW.md
 RESEARCH_LOG.md    every decision, command, result and limitation
 ```
 
 ## Conventions
 PDEBench Burgers convention: `u_t + (u^2/2)_x = (nu/pi) u_xx` on [0,1), periodic, `nu ∈ [0.01, 0.1]`.
-Cost = solver steps × 144.3 µs (sequential median), because parallel wall times are not clean. The solver is an
-independent NumPy re-implementation of PDEBench's scheme; no PDEBench code is included (its licence restricts
-derivatives). Software developed by NEC Laboratories Europe (PDEBench) was used as the reference for the
-numerical method.
+Cost = solver steps × 144.3 µs (sequential Phase A median), reported as CPU-s per query plus forward-solve counts;
+parallel wall times are never used for claims. The solver is an independent NumPy re-implementation of PDEBench's
+scheme; no PDEBench code is included (its licence restricts derivatives). Software developed by NEC Laboratories
+Europe (PDEBench) was used as the reference for the numerical method.
