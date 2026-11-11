@@ -1,6 +1,6 @@
 # Project workflow: status and phase plan
 
-*Last updated 2026-11-09 (evening). Handed over to the teammate; see the handover doc and `RESEARCH_LOG.md`. Plain-language explainer: `docs/How_Our_Project_Works.pdf`. Each phase lists tasks, outputs and an **exit gate**: a concrete check
+*Last updated 2026-11-11 (T1 analysed, follow-up run, report drafted). Previously 2026-11-09 (evening). Handed over to the teammate; see the handover doc and `RESEARCH_LOG.md`. Plain-language explainer: `docs/How_Our_Project_Works.pdf`. Each phase lists tasks, outputs and an **exit gate**: a concrete check
 that must pass before the next phase starts. "Verified" means the result exists on disk and was
 checked; anything else is a plan.*
 
@@ -23,8 +23,10 @@ checked; anything else is a plan.*
 | Phase C MLP (3 seeds; val median error 8–12%) | Done, verified | `models/phaseC_v2/` |
 | Phase D comparison on validation | Done, verified (MLP vs Brent: −1.49 CPU-s/query, CI [−1.84, −1.16]; 1.17–1.35×) | `results/phaseD_v1_val/` |
 | Accuracy-matched validation check | Done, verified (MLP vs Brent: −0.65 CPU-s median, ≈0 mean) | `results/phaseD_v1_tightlsq_val/` |
-| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Runs complete, **not yet analyzed** (handover task T1) | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
-| Go/no-go (E), scale (F), report (G), submission (H) | Not started | — |
+| Pilot test (pre-registered, 3 seeds × 2 tolerances) | Analyzed 2026-11-11: positive saving vs Brent **not** established (0/3 seeds pass both settings); 2× not met | `results/phaseD_v1_3seeds_test/`, `results/phaseD_v1_tightlsq_3seeds_test/` |
+| Go/no-go (E) | Evidence in: main claim no-go; follow-up (learned bracket for Brent, pre-registered) gives a small saving (8–10%, 3/3 seeds). **Team decision pending** | `docs/report_draft.md` §3.6–3.7 |
+| Report draft (G) | First draft written; figures regenerate from saved results | `docs/report_draft.md`, `results/report/` |
+| Scale (F), submission (H) | Not started | — |
 
 ### Verified Phase A findings
 - **Recovery:** every method recovers ν on all 20 noise-free problems (worst relative error 1.2e-5), with no failures.
