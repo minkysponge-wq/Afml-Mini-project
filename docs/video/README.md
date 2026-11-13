@@ -1,5 +1,13 @@
 # Presentation video
 
+**Final video: `AFML_live_demo.mp4`** (4:59, 1080p, subtitles burned in, no audio). It is a real screen recording of
+`live_demo.py` running on our laptop, edited by `edit_recording.py`: a title card, subtitles explaining each step,
+the opened figures shown full-size, and the 26-second start-up wait in step 6 played at 6x (labelled on screen).
+Rebuild: `python docs/video/edit_recording.py "<screen recording>.mp4" --ffmpeg <path to ffmpeg.exe>`.
+
+The rest of this file describes an earlier, generated (non-recorded) video.
+
+
 `AFML_project_video.mp4` (10:43, 1080p, captioned, no audio) covers the problem, the datasets, a live demo, the
 benchmarks and the results. It is not in git (about 80 MB); rebuild it with the steps below.
 
