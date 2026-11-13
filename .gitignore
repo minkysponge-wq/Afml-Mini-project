@@ -9,6 +9,4 @@ results/**/runs.partial.jsonl
 # presentation video export (regenerate with docs/slides/make_video.ps1)
 docs/slides/*.mp4
 docs/video/*.mp4
-docs/video/frames/
-docs/video/AFML_video.pptx
 docs/video/edit_build/
