@@ -100,10 +100,10 @@ def main():
         [("Project Title: ", True), ("Does a Learned Starting Point Make Viscosity Estimation Cheaper?", False)],
         [("A cost-counted study on the Burgers equation", False)],
         "", "",
-        "Team member 1 SRN and name: Sampreeth Jaladi",   # SRNs left blank for the team to add
-        "Team member 2 SRN and name: Samarth",
-        "Team member 3 SRN and name: Sarva Sandip",
-        "Team member 4 SRN and name: Sai Likhith S",
+        "Team member 1 SRN and name: PES1UG24AM246 Sampreeth Jaladi",
+        "Team member 2 SRN and name: PES1UG24AM243 Samarth",
+        "Team member 3 SRN and name: PES1UG24AM255 Sarva Sandip",
+        "Team member 4 SRN and name: PES1UG24AM239 Sai Likhith S",
     ])
 
     # 2 Problem statement
