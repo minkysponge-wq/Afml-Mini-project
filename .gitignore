@@ -5,3 +5,8 @@ results/*_quick/
 data/**/*.npz
 "file (afml).txt"
 results/**/runs.partial.jsonl
+
+# presentation video export (regenerate with docs/slides/make_video.ps1)
+docs/slides/*.mp4
+docs/video/*.mp4
+docs/video/edit_build/
