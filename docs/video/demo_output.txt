@@ -1,0 +1,45 @@
+== Dataset (data/phaseB_v2) ==
+train:  3000 trajectories ->  27000 cases   nu in [0.0100, 0.0999]
+val  :    50 trajectories ->    450 cases   nu in [0.0101, 0.0993]
+test :    50 trajectories ->    450 cases   nu in [0.0103, 0.0981]
+readings per case: 4 times x 16 sensor slots; sensors on: [4, 8, 16]; noise: [0.0, 0.01, 0.05]
+integrity checks: ic_seeds_disjoint=PASS, ic_seeds_unique_within_split=PASS, variants_parent_in_split=PASS, normaliser_fitted_on_train_only=PASS, nan_iff_masked=PASS, nu_within_bounds=PASS, all_finite_clean=PASS, sensor_mapping_reproducible=PASS, params_reproducible=PASS
+
+== Test case 4: 8 sensors, 1% noise, true nu = 0.01186 ==
+MLP guess: nu = 0.01370  (15.5% off)
+
+-- Brent (full range) --
+  run  1: nu = 0.02410   misfit J = 1.396e-02   cost so far =  0.58 CPU-s
+  run  2: nu = 0.04150   misfit J = 6.358e-02   cost so far =  1.58 CPU-s
+  run  3: nu = 0.01722   misfit J = 3.856e-03   cost so far =  2.00 CPU-s
+  run  4: nu = 0.01641   misfit J = 2.948e-03   cost so far =  2.39 CPU-s
+  run  5: nu = 0.01358   misfit J = 6.005e-04   cost so far =  2.72 CPU-s
+  run  6: nu = 0.01189   misfit J = 1.367e-04   cost so far =  3.00 CPU-s
+  run  7: nu = 0.01193   misfit J = 1.363e-04   cost so far =  3.29 CPU-s
+  run  8: nu = 0.01194   misfit J = 1.362e-04   cost so far =  3.58 CPU-s
+  run  9: nu = 0.01194   misfit J = 1.362e-04   cost so far =  3.87 CPU-s
+  run 10: nu = 0.01195   misfit J = 1.362e-04   cost so far =  4.16 CPU-s
+  => nu_hat = 0.01194  error 0.69%  |  10 simulator runs, 4.16 CPU-s
+
+-- MLP start + least squares --
+  run  1: nu = 0.01370   misfit J = 6.652e-04   cost so far =  0.33 CPU-s
+  run  2: nu = 0.01370   misfit J = 6.651e-04   cost so far =  0.66 CPU-s
+  run  3: nu = 0.01247   misfit J = 1.880e-04   cost so far =  0.96 CPU-s
+  run  4: nu = 0.01247   misfit J = 1.880e-04   cost so far =  1.26 CPU-s
+  run  5: nu = 0.01203   misfit J = 1.378e-04   cost so far =  1.55 CPU-s
+  run  6: nu = 0.01203   misfit J = 1.378e-04   cost so far =  1.84 CPU-s
+  run  7: nu = 0.01195   misfit J = 1.362e-04   cost so far =  2.13 CPU-s
+  run  8: nu = 0.01195   misfit J = 1.362e-04   cost so far =  2.42 CPU-s
+  run  9: nu = 0.01194   misfit J = 1.362e-04   cost so far =  2.71 CPU-s
+  run 10: nu = 0.01194   misfit J = 1.362e-04   cost so far =  2.99 CPU-s
+  => nu_hat = 0.01194  error 0.69%  |  10 simulator runs, 2.99 CPU-s
+
+-- MLP bracket + Brent --
+  run  1: nu = 0.01365   misfit J = 6.375e-04   cost so far =  0.33 CPU-s
+  run  2: nu = 0.01655   misfit J = 3.093e-03   cost so far =  0.73 CPU-s
+  run  3: nu = 0.01212   misfit J = 1.425e-04   cost so far =  1.02 CPU-s
+  run  4: nu = 0.01193   misfit J = 1.363e-04   cost so far =  1.31 CPU-s
+  run  5: nu = 0.01194   misfit J = 1.362e-04   cost so far =  1.60 CPU-s
+  run  6: nu = 0.01195   misfit J = 1.362e-04   cost so far =  1.88 CPU-s
+  run  7: nu = 0.01194   misfit J = 1.362e-04   cost so far =  2.17 CPU-s
+  => nu_hat = 0.01194  error 0.68%  |  7 simulator runs, 2.17 CPU-s
