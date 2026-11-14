@@ -4,14 +4,16 @@ Usage: python docs/slides/build_slides.py
 Input:  docs/slides/template.pptx (course template, unchanged)
 Output: docs/slides/AFML_project_slides.pptx
 Figures come from docs/report/figures (built by docs/report/make_figures.py); numbers are from results/ (see
-RESEARCH_LOG.md). Team names and SRNs are left for the team to fill in.
+RESEARCH_LOG.md). Layout rule: no picture may overlap body text or the footer (enforced by check_layout).
 """
 from __future__ import annotations
 
 import copy
 from pathlib import Path
 
+from PIL import Image
 from pptx import Presentation
+from pptx.dml.color import RGBColor
 from pptx.util import Emu, Inches, Pt
 
 HERE = Path(__file__).resolve().parent
@@ -90,75 +92,139 @@ def picture(slide, path, left, top, width=None, height=None):
     return slide.shapes.add_picture(str(path), Inches(left), Inches(top), **kw)
 
 
+BODY = "1F2937"      # charcoal body text (replaces the template's bright #0033CC blue)
+LABEL = "1F3A93"     # navy for bold labels
+A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+
+
+def style(sh, left, top, width, height, space_after=8, line=1.1):
+    """Place a text box and give its text the deck's colours and spacing (wrap on, no autofit)."""
+    sh.left, sh.top, sh.width, sh.height = Inches(left), Inches(top), Inches(width), Inches(height)
+    tf = sh.text_frame
+    tf.word_wrap = True
+    bp = tf._txBody.find(A + "bodyPr")
+    for child in list(bp):
+        if child.tag in (A + "normAutofit", A + "spAutoFit", A + "noAutofit"):
+            bp.remove(child)
+    bp.append(bp.makeelement(A + "noAutofit", {}))
+    for p in tf.paragraphs:
+        p.space_after = Pt(space_after)
+        p.line_spacing = line
+        for r in p.runs:
+            r.font.color.rgb = RGBColor.from_string(LABEL if r.font.bold else BODY)
+
+
+def fit(path, width):
+    """Height (inches) of an image scaled to the given width."""
+    w, h = Image.open(path).size
+    return width * h / w
+
+
+def check_layout(prs, footer_top=6.93):
+    """Fail the build if a picture overlaps a body text box or runs into the footer."""
+    E = 914400
+    for i, s in enumerate(prs.slides, 1):
+        pics = [sh for sh in s.shapes if sh.shape_type == 13 and sh.name != LOGO]
+        texts = [sh for sh in s.shapes if sh.has_text_frame and sh.text_frame.text.strip() and 1.8 < sh.top / E < 6.9]
+        for p in pics:
+            pb = (p.left / E, p.top / E, (p.left + p.width) / E, (p.top + p.height) / E)
+            assert pb[3] <= footer_top and pb[2] <= 13.2, f"slide {i}: picture leaves the content area {pb}"
+            for t in texts:
+                tb = (t.left / E, t.top / E, (t.left + t.width) / E, (t.top + t.height) / E)
+                ox = min(pb[2], tb[2]) - max(pb[0], tb[0]); oy = min(pb[3], tb[3]) - max(pb[1], tb[1])
+                assert not (ox > 0.01 and oy > 0.01), f"slide {i}: picture overlaps text box '{t.name}'"
+
+
 def main():
     prs = Presentation(HERE / "template.pptx")
     S = prs.slides
 
     # 1 Title
     s = S[0]
-    set_bullets(shape(s, "Google Shape;26;p3"), [
-        [("Project Title: ", True), ("Does a Learned Starting Point Make Viscosity Estimation Cheaper?", False)],
+    sh = shape(s, "Google Shape;26;p3")
+    set_bullets(sh, [
+        [("Project Title: ", True), ("Does a Learned Starting Point Make Viscosity Estimation Cheaper?", True)],
         [("A cost-counted study on the Burgers equation", False)],
-        "", "",
+        "",
         "Team member 1 SRN and name: PES1UG24AM246 Sampreeth Jaladi",
         "Team member 2 SRN and name: PES1UG24AM243 Samarth",
         "Team member 3 SRN and name: PES1UG24AM255 Sarva Sandip",
         "Team member 4 SRN and name: PES1UG24AM239 Sai Likhith S",
-    ])
+    ], size=22)
+    style(sh, 0.83, 2.1, 11.6, 4.6, space_after=6)
 
-    # 2 Problem statement
+    # 2 Problem statement: text across the top, figure centred below
     s = S[1]
-    set_bullets(shape(s, "Content Placeholder 2"), [
+    sh = shape(s, "Content Placeholder 2")
+    set_bullets(sh, [
         [("Goal: ", True), ("find the viscosity of a fluid (1-D Burgers equation) from a few noisy sensor readings", False)],
-        [("Standard way: ", True), ("run the simulator again and again until it matches the readings; each run costs time", False)],
+        [("Standard way: ", True), ("rerun the simulator until it matches the readings; every run costs time", False)],
         [("Our question: ", True), ("if a small neural network guesses the viscosity first, does the fit need fewer runs?", False)],
         [("Fair test: ", True), ("against the best classical search, counting every run and the network's training cost", False)],
-    ], size=18)
+    ], size=17)
+    style(sh, 1.0, 1.95, 11.3, 1.95, space_after=6)
     drop(s, "Picture 2")
-    sh = shape(s, "Content Placeholder 2")
-    sh.width, sh.height = Inches(11.0), Inches(2.6)
-    picture(s, FIG / "trajectories.png", 2.4, 4.45, width=8.2)
+    w = 9.2
+    picture(s, FIG / "trajectories.png", (13.333 - w) / 2, 4.05, width=w)
 
-    # 3 Uniqueness
+    # 3 Uniqueness: text left, figure right
     s = S[2]
-    set_bullets(shape(s, "Content Placeholder 2"), [
+    sh = shape(s, "Content Placeholder 2")
+    set_bullets(sh, [
         "Compared with a strong baseline (Brent's search), not only with a poor starting guess",
         "Counts the network's training cost and gives a break-even number of queries",
         "Test protocol written down and committed before the test data were used",
         "Checks accuracy against the theoretical limit (Cramér–Rao bound)",
         "Reports a negative result honestly: the 2x target was not met",
-    ], size=18)
-    shape(s, "Content Placeholder 2").width = Inches(6.0)
+    ], size=17)
+    style(sh, 0.9, 2.0, 5.9, 4.7, space_after=10)
     drop(s, "Picture 6")
-    picture(s, FIG / "test_paired.png", 7.15, 2.35, width=5.55)
+    w = 5.9
+    picture(s, FIG / "test_paired.png", 7.0, 2.0 + (4.7 - fit(FIG / "test_paired.png", w)) / 2, width=w)
 
-    # 4 Dataset
+    # 4 Dataset: text left, figure right
     s = S[3]
-    set_bullets(shape(s, "Content Placeholder 2"), [
+    sh = shape(s, "Content Placeholder 2")
+    set_bullets(sh, [
         [("Source: ", True), ("generated by our own Burgers solver (no public dataset; PDEBench scheme)", False)],
         [("Size: ", True), ("3,000 train / 50 val / 50 test trajectories = 27,000 / 450 / 450 cases", False)],
         [("Attributes: ", True), ("16 sensors x 4 times; 4, 8 or 16 sensors on; 0 / 1 / 5% noise; known starting state", False)],
         [("Target: ", True), ("log viscosity, viscosity in [0.01, 0.1]", False)],
         [("Robustness sets: ", True), ("3 x 50 new trajectories (new starting states, finer grid, unseen sensor patterns)", False)],
         [("Checks: ", True), ("split by trajectory seed; 9 automated integrity checks", False)],
-    ], size=16)
-    shape(s, "Content Placeholder 2").width = Inches(6.2)
+    ], size=15)
+    style(sh, 0.9, 1.95, 6.2, 4.85, space_after=7)
     drop(s, "Picture 2")
-    picture(s, FIG / "objective_curves.png", 7.65, 2.2, width=5.2)
+    w = 5.4
+    picture(s, FIG / "objective_curves.png", 7.45, 1.95 + (4.85 - fit(FIG / "objective_curves.png", w)) / 2, width=w)
 
-    # 5 Design diagram
+    # 5 Design diagram: diagram centred, one-line caption under it
     s = S[4]
     drop(s, "Picture 10")
     sh = shape(s, "Content Placeholder 2")
     set_bullets(sh, [
         "Same simulator, bounds and cost accounting for every method; every simulator run is counted",
     ], size=14)
-    sh.top, sh.height = Inches(6.25), Inches(0.5)
-    picture(s, FIG / "pipeline.png", 0.9, 1.9, width=11.2)
+    w = 10.0
+    h = fit(FIG / "pipeline.png", w)
+    picture(s, FIG / "pipeline.png", (13.333 - w) / 2, 1.9, width=w)
+    style(sh, 1.2, 1.9 + h + 0.1, 10.9, 0.45, space_after=0)
+    p0 = sh.text_frame.paragraphs[0]
+    p0.alignment = 2                                 # centred caption, no bullet
+    ppr = p0._p.get_or_add_pPr()
+    for tag in ("buChar", "buAutoNum", "buNone"):
+        for el in ppr.findall(A + tag):
+            ppr.remove(el)
+    ppr.set("marL", "0"); ppr.set("indent", "0")
+    ppr.append(ppr.makeelement(A + "buNone", {}))
+    for r in p0.runs:
+        r.font.italic = True
+        r.font.color.rgb = RGBColor.from_string("4B5563")
 
-    # 6 Results
+    # 6 Results: text left, two figures stacked right
     s = S[5]
-    set_bullets(shape(s, "Content Placeholder 2"), [
+    sh = shape(s, "Content Placeholder 2")
+    set_bullets(sh, [
         "Same accuracy for all methods (0.22% median error); matches the Cramér–Rao limit",
         "Learned start vs midpoint start: about 2 CPU-s saved per query on the pilot test",
         "Learned start vs Brent: 0.8–1.1 CPU-s saved at the loose tolerance, ~0 at the tight one",
@@ -166,10 +232,13 @@ def main():
         "Follow-up (after the test): MLP guess as a bracket for Brent saves 8–10%",
         "Break-even 2,600–4,500 queries; saving gone for unseen starting states / sensor patterns",
     ], size=14)
-    shape(s, "Content Placeholder 2").width = Inches(5.5)
+    style(sh, 0.6, 1.95, 5.2, 4.9, space_after=8)
     drop(s, "Picture 10")
-    picture(s, FIG / "tolerance_curves.png", 6.75, 2.0, width=6.1)
-    picture(s, FIG / "robustness.png", 6.75, 4.3, width=6.1)
+    w = 7.0
+    h1, h2 = fit(FIG / "tolerance_curves.png", w), fit(FIG / "robustness.png", w)
+    gap = (4.9 - h1 - h2) / 3
+    picture(s, FIG / "tolerance_curves.png", 6.0, 1.95 + gap, width=w)
+    picture(s, FIG / "robustness.png", 6.0, 1.95 + 2 * gap + h1, width=w)
 
     # 7 Done vs remaining
     t7 = shape(S[6], "Table 6")
@@ -181,8 +250,8 @@ def main():
         ("3", "Dataset generator, 9 integrity checks; MLP trained (3 seeds)", "Done"),
         ("4", "Pre-registered test evaluation and go/no-go verdict", "Done"),
         ("5", "Tolerance curves, Cramér–Rao bound, robustness sets, ablations", "Done"),
-        ("6", "IEEE paper, slides, repository documentation", "Done"),
-        ("7", "Larger 200-trajectory test set (optional); presentation video", "To be done"),
+        ("6", "IEEE paper, slides, live demo video, repository documentation", "Done"),
+        ("7", "Larger 200-trajectory test set (optional extra)", "Not done"),
     ], size=13)
 
     # 8 Quantity and quality of work
@@ -227,6 +296,7 @@ def main():
         ("7", "A Sparse Control Approach to Optimal Sensor Placement in PDE-Constrained Parameter Estimation", "I. Neitzel, K. Pieper, B. Vexler, D. Walter", "2019"),
     ], size=10)
 
+    check_layout(prs)
     out = HERE / "AFML_project_slides.pptx"
     prs.save(out)
     print("saved", out)

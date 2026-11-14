@@ -63,7 +63,7 @@ def test_paired():
             labels.append(f"{name}, seed {s}"); y += 1
     ax.axvline(0, color=GREY, lw=0.8, ls="--")
     ax.set_yticks(range(len(labels)), labels, fontsize=7); ax.invert_yaxis()
-    ax.set_xlabel("median paired difference, MLP+LSQ minus Brent (CPU-s per query); negative = MLP cheaper", fontsize=7.5)
+    ax.set_xlabel("median paired difference, MLP+LSQ minus Brent (CPU-s per query)\nnegative = MLP cheaper", fontsize=7.5)
     ax.set_title("Pilot test, 450 variants: saving vs Brent with 95% bootstrap CI", fontsize=9)
     ax.spines[["top", "right"]].set_visible(False)
     fig.tight_layout(); fig.savefig(OUT / "test_paired.png", dpi=200); plt.close(fig)
